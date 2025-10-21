@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 export type Genre = "Action" | "Fantasy" | "Sci-Fi" | "Romance" | "Comedy" | "Drama" | "Adventure" | "Mystery" | "Horror" | "Thriller" | "Western" | "Animation" | "Documentary" | "Family" | "Music" | "Travel" | "History" | "Sports" | "Business" | "Technology" | "Fashion" | "Food" | "Health" | "Education" | "Other" | "Historical";
-=======
-export type Genre = "Action" | "Fantasy" | "Sci-Fi" | "Romance" | "Comedy" | "Drama" | "Adventure";
->>>>>>> 19323790a127925bf415d0cf3df4fa7303da8e6e
 export type ComicFormat = "Comic" | "Manga" | "Manhwa";
 
 export interface Episode {
@@ -56,5 +52,3 @@ export interface LightNovel {
   synopsis?: string;
   createdAt: string;
 }
-
-
