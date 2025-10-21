@@ -1,6 +1,6 @@
 // Trivial change added to force Vercel to clear its build cache and re-read types.ts (2025-10-21)
-// Changed import from "@/src/types" to "./types/types" to force module resolution change.
-import { Comic, Episode, Review, UserProfile, LightNovel } from "../types/types";
+// Changed import from "@/src/types" to "../types" to force module resolution change.
+import { Comic, Episode, Review, UserProfile, LightNovel } from "../types";
 
 // Simple in-memory mock store for demo purposes only.
 const users: Record<string, UserProfile> = {
