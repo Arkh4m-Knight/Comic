@@ -1,4 +1,4 @@
-export type Genre = "Action" | "Fantasy" | "Sci-Fi" | "Romance" | "Comedy" | "Drama";
+export type Genre = "Action" | "Fantasy" | "Sci-Fi" | "Romance" | "Comedy" | "Drama" | "Adventure";
 export type ComicFormat = "Comic" | "Manga" | "Manhwa";
 
 export interface Episode {
