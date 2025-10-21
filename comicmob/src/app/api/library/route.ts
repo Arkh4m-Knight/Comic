@@ -33,3 +33,4 @@ export async function DELETE(req: Request) {
   
   return NextResponse.json({ error: "Comic not in library" }, { status: 404 });
 }
+

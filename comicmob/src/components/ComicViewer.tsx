@@ -38,3 +38,4 @@ export default function ComicViewer({ imageUrls, mode = "scroll" }: ComicViewerP
 }
 
 
+
