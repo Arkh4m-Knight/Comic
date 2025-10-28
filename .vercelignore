@@ -1,0 +1,7 @@
+node_modules
+.npm
+package-lock.json
+.gitignore
+README.md
+netlify.toml
+

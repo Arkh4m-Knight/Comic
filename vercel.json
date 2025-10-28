@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd comicmob && npm install && npm run build",
+  "outputDirectory": "comicmob/.next",
+  "devCommand": "cd comicmob && npm run dev",
+  "installCommand": "cd comicmob && npm install",
+  "framework": "nextjs",
+  "rootDirectory": "comicmob"
+}
+
