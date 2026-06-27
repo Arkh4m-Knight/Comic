@@ -40,18 +40,18 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero — "Featured Edition" */}
-      <section className="border-b border-line">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-[1fr_320px] lg:items-center">
-          <div>
-            <p className="mb-5 text-[11px] font-medium uppercase tracking-widest2 text-foil">
+      {/* Hero — floating featured edition in negative space */}
+      <section className="relative overflow-hidden border-b border-line">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-6 py-14 lg:grid-cols-[1fr_auto] lg:gap-4 lg:py-32">
+          <div className="relative z-10 max-w-xl">
+            <p className="mb-6 text-[11px] font-medium uppercase tracking-widest2 text-foil">
               Featured Edition
             </p>
-            <h1 className="font-display text-5xl italic leading-[1.05] text-paper lg:text-6xl">
+            <h1 className="font-display text-6xl italic leading-[0.98] text-paper sm:text-7xl lg:text-8xl">
               {featured?.title}
             </h1>
 
-            <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-widest2 text-paper-soft">
+            <div className="mt-7 flex flex-wrap items-center gap-3 text-xs uppercase tracking-widest2 text-paper-soft">
               <span>{featured?.format}</span>
               <span className="text-line">/</span>
               <span>{featured?.genres.join(" · ")}</span>
@@ -74,7 +74,7 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div className="mt-10 flex gap-2">
+            <div className="mt-12 flex gap-2">
               {carouselComics.map((_, index) => (
                 <button
                   key={index}
@@ -88,17 +88,35 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative mx-auto hidden w-full max-w-[280px] lg:block">
-            <div className="overflow-hidden rounded-sm border border-line">
+          {/* Floating cover + peek of next item, in negative space */}
+          <div className="relative hidden h-[460px] w-[420px] lg:block">
+            <div className="absolute right-0 top-1/2 h-[400px] w-[260px] -translate-y-1/2 overflow-hidden rounded-sm opacity-70">
+              {carouselComics[(currentSlide + 1) % carouselComics.length]?.coverUrl && (
+                <img
+                  src={carouselComics[(currentSlide + 1) % carouselComics.length].coverUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-ink-950/30" />
+            </div>
+
+            <div className="absolute left-0 top-1/2 h-[400px] w-[260px] -translate-y-1/2 overflow-hidden rounded-sm shadow-[0_30px_80px_-20px_rgba(201,162,39,0.25)]">
               {featured?.coverUrl && (
                 <img
                   src={featured.coverUrl}
                   alt={featured.title}
-                  className="aspect-[3/4] w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               )}
             </div>
-            <div className="pointer-events-none absolute -inset-3 -z-10 rounded-sm border border-line" />
+
+            <div className="absolute -bottom-2 left-0 flex items-center gap-3">
+              <div className="h-px w-8 bg-foil" />
+              <span className="text-xs uppercase tracking-widest2 text-paper-soft">
+                {featured?.format}
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -142,10 +160,44 @@ export default function HomePage() {
           <>
             <section>
               <SectionHeader eyebrow="Trending" title="Comics" />
-              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
-                {comicsOnly.map((c) => (
-                  <ComicCard key={c.id} comic={c} />
-                ))}
+              <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr]">
+                {comicsOnly[0] && (
+                  <a href={`/reader/comic/${comicsOnly[0].id}`} className="group block">
+                    <div className="overflow-hidden rounded-sm border border-line transition-colors group-hover:border-foil">
+                      {comicsOnly[0].coverUrl && (
+                        <img
+                          src={comicsOnly[0].coverUrl}
+                          alt={comicsOnly[0].title}
+                          className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                        />
+                      )}
+                    </div>
+                    <div className="pt-4">
+                      <p className="text-[10px] font-medium uppercase tracking-widest2 text-foil/80">
+                        {comicsOnly[0].format}
+                      </p>
+                      <p className="mt-1 font-display text-2xl italic text-paper">{comicsOnly[0].title}</p>
+                      <p className="text-xs text-paper-soft">{comicsOnly[0].genres.join(" · ")}</p>
+                    </div>
+                  </a>
+                )}
+
+                <div className="flex flex-col divide-y divide-line">
+                  {comicsOnly.slice(1).map((c) => (
+                    <a key={c.id} href={`/reader/comic/${c.id}`} className="group flex items-center gap-4 py-4 first:pt-0">
+                      <div className="h-20 w-16 flex-shrink-0 overflow-hidden rounded-sm border border-line transition-colors group-hover:border-foil">
+                        {c.coverUrl && (
+                          <img src={c.coverUrl} alt={c.title} className="h-full w-full object-cover" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-medium uppercase tracking-widest2 text-foil/80">{c.format}</p>
+                        <p className="truncate font-display text-base text-paper">{c.title}</p>
+                        <p className="truncate text-xs text-paper-soft">{c.genres.join(" · ")}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
             </section>
 
@@ -171,9 +223,9 @@ export default function HomePage() {
 
         <section>
           <SectionHeader eyebrow="From the Shelf" title="Light Novels" />
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
+          <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-2">
             {lightNovels.map((ln) => (
-              <div key={ln.id}>
+              <div key={ln.id} className="w-40 flex-shrink-0">
                 <div className="overflow-hidden rounded-sm border border-line bg-ink-900">
                   {ln.coverUrl ? (
                     <img
