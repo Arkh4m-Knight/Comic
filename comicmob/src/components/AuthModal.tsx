@@ -60,8 +60,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-xl border border-neutral-800 bg-neutral-900 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-900 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">
             {mode === "signup" ? "Create Account" : "Sign In"}
