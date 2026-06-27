@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -57,25 +58,28 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     }
   }
 
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/80 p-4">
+      <div className="w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-sm border border-line bg-ink-900 p-7">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-display text-xl italic text-paper">
             {mode === "signup" ? "Create Account" : "Sign In"}
           </h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white">
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button onClick={onClose} className="text-paper-soft hover:text-paper">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {confirmNotice ? (
-          <div className="space-y-4">
-            <p className="text-sm text-neutral-300">
+          <div className="space-y-5">
+            <p className="text-sm leading-relaxed text-paper-soft">
               Check your email — we sent a confirmation link. Click it, then come back and sign in.
             </p>
             <button
@@ -83,46 +87,52 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 setMode("signin");
                 setConfirmNotice(false);
               }}
-              className="w-full rounded-lg bg-brand px-4 py-3 font-semibold text-white hover:bg-brand-dark"
+              className="w-full rounded-sm bg-foil py-3 text-sm font-semibold text-ink-950 hover:bg-foil-bright"
             >
               Go to Sign In
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">Email</label>
+              <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-md border border-neutral-800 bg-neutral-950 p-3 text-white outline-none focus:border-brand"
+                className="w-full rounded-sm border border-line bg-ink-950 p-3 text-sm text-paper outline-none focus:border-foil"
               />
             </div>
 
             {mode === "signup" && (
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-1">Username</label>
+                <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">
+                  Username
+                </label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full rounded-md border border-neutral-800 bg-neutral-950 p-3 text-white outline-none focus:border-brand"
+                  className="w-full rounded-sm border border-line bg-ink-950 p-3 text-sm text-paper outline-none focus:border-foil"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">Password</label>
+              <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">
+                Password
+              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full rounded-md border border-neutral-800 bg-neutral-950 p-3 text-white outline-none focus:border-brand"
+                className="w-full rounded-sm border border-line bg-ink-950 p-3 text-sm text-paper outline-none focus:border-foil"
               />
             </div>
 
@@ -131,14 +141,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-brand px-4 py-3 font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+              className="w-full rounded-sm bg-foil py-3 text-sm font-semibold text-ink-950 transition-colors hover:bg-foil-bright disabled:opacity-50"
             >
               {loading
                 ? mode === "signup" ? "Creating Account..." : "Signing In..."
                 : mode === "signup" ? "Create Account" : "Sign In"}
             </button>
 
-            <p className="text-center text-sm text-neutral-400">
+            <p className="text-center text-xs text-paper-soft">
               {mode === "signup" ? "Already have an account?" : "Need an account?"}{" "}
               <button
                 type="button"
@@ -146,7 +156,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   setMode(mode === "signup" ? "signin" : "signup");
                   setError("");
                 }}
-                className="text-brand hover:underline"
+                className="text-foil hover:underline"
               >
                 {mode === "signup" ? "Sign In" : "Create one"}
               </button>
@@ -154,6 +164,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

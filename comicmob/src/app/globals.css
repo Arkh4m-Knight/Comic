@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --radius: 10px;
+  --radius: 6px;
 }
 
 * {
@@ -14,9 +14,30 @@ html, body {
   height: 100%;
 }
 
+body {
+  background-color: #0E0E11;
+}
+
 a {
   text-decoration: none;
 }
 
+/* Respect reduced-motion preferences site-wide */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
+/* Visible keyboard focus ring using the foil accent */
+:focus-visible {
+  outline: 2px solid #C9A227;
+  outline-offset: 2px;
+}
 
+.hairline {
+  border-color: #2A2A2F;
+}
