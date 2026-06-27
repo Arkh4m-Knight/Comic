@@ -1,6 +1,3 @@
-// Trivial change added to force Vercel to clear its build cache and re-read types.ts (2025-10-27-v2)
-// Changed import from "@/src/types" to "../types" to force module resolution change.
-// NOTE: Genres temporarily limited to Action/Fantasy to bypass persistent Vercel type-caching error.
 import { Comic, Episode, Review, UserProfile, LightNovel } from "../types";
 
 // Simple in-memory mock store for demo purposes only.
@@ -23,7 +20,7 @@ const comics: Record<string, Comic> = {
   c1: {
     id: "c1",
     title: "Starfall Knights",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
+    coverUrl: "https://picsum.photos/seed/c1-starfallknights/400/600",
     genres: ["Action", "Fantasy"],
     format: "Comic",
     creatorId: "u1",
@@ -33,8 +30,8 @@ const comics: Record<string, Comic> = {
   c2: {
     id: "c2",
     title: "Neon Alley",
-    coverUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop&crop=center",
-    genres: ["Action", "Fantasy"], // TEMPORARILY changed from Sci-Fi/Drama
+    coverUrl: "https://picsum.photos/seed/c2-neonalley/400/600",
+    genres: ["Action", "Fantasy"],
     format: "Comic",
     creatorId: "u1",
     episodes,
@@ -43,8 +40,8 @@ const comics: Record<string, Comic> = {
   c3: {
     id: "c3",
     title: "Cyber Warriors",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
-    genres: ["Action", "Fantasy"], // TEMPORARILY changed from Action/Sci-Fi
+    coverUrl: "https://picsum.photos/seed/c3-cyberwarriors/400/600",
+    genres: ["Action", "Fantasy"],
     format: "Comic",
     creatorId: "u1",
     episodes,
@@ -53,8 +50,8 @@ const comics: Record<string, Comic> = {
   c4: {
     id: "c4",
     title: "Mystic Realms",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
-    genres: ["Fantasy", "Action"], // TEMPORARILY changed from Fantasy/Adventure
+    coverUrl: "https://picsum.photos/seed/c4-mysticrealms/400/600",
+    genres: ["Fantasy", "Action"],
     format: "Comic",
     creatorId: "u1",
     episodes,
@@ -63,8 +60,8 @@ const comics: Record<string, Comic> = {
   m1: {
     id: "m1",
     title: "Blade of Sakura",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
-    genres: ["Action", "Fantasy"], // TEMPORARILY changed from Action/Drama
+    coverUrl: "https://picsum.photos/seed/m1-bladeofsakura/400/600",
+    genres: ["Action", "Fantasy"],
     format: "Manga",
     creatorId: "u1",
     episodes,
@@ -73,8 +70,8 @@ const comics: Record<string, Comic> = {
   m2: {
     id: "m2",
     title: "Tokyo Shadows",
-    coverUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop&crop=center",
-    genres: ["Fantasy", "Action"], // TEMPORARILY changed from Mystery/Thriller
+    coverUrl: "https://picsum.photos/seed/m2-tokyoshadows/400/600",
+    genres: ["Fantasy", "Action"],
     format: "Manga",
     creatorId: "u1",
     episodes,
@@ -83,8 +80,8 @@ const comics: Record<string, Comic> = {
   m3: {
     id: "m3",
     title: "Samurai Dreams",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
-    genres: ["Action", "Fantasy"], // TEMPORARILY changed from Historical/Action
+    coverUrl: "https://picsum.photos/seed/m3-samuraidreams/400/600",
+    genres: ["Action", "Fantasy"],
     format: "Manga",
     creatorId: "u1",
     episodes,
@@ -92,9 +89,9 @@ const comics: Record<string, Comic> = {
   },
   m4: {
     id: "m4",
-    title: "School Days",
-    coverUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop&crop=center",
-    genres: ["Fantasy", "Action"], // TEMPORARILY changed from Romance/Comedy
+    title: "Schoolyard Chronicles",
+    coverUrl: "https://picsum.photos/seed/m4-schoolyardchronicles/400/600",
+    genres: ["Fantasy", "Action"],
     format: "Manga",
     creatorId: "u1",
     episodes,
@@ -103,8 +100,8 @@ const comics: Record<string, Comic> = {
   mh1: {
     id: "mh1",
     title: "Skybound Hunter",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
-    genres: ["Fantasy", "Action"], // TEMPORARILY changed from Fantasy/Comedy
+    coverUrl: "https://picsum.photos/seed/mh1-skyboundhunter/400/600",
+    genres: ["Fantasy", "Action"],
     format: "Manhwa",
     creatorId: "u1",
     episodes,
@@ -112,8 +109,8 @@ const comics: Record<string, Comic> = {
   },
   mh2: {
     id: "mh2",
-    title: "Solo Leveling",
-    coverUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop&crop=center",
+    title: "Shadow Ascension",
+    coverUrl: "https://picsum.photos/seed/mh2-shadowascension/400/600",
     genres: ["Action", "Fantasy"],
     format: "Manhwa",
     creatorId: "u1",
@@ -122,9 +119,9 @@ const comics: Record<string, Comic> = {
   },
   mh3: {
     id: "mh3",
-    title: "Tower of God",
-    coverUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop&crop=center",
-    genres: ["Fantasy", "Action"], // TEMPORARILY changed from Adventure/Fantasy
+    title: "Spire of Eternity",
+    coverUrl: "https://picsum.photos/seed/mh3-spireofeternity/400/600",
+    genres: ["Fantasy", "Action"],
     format: "Manhwa",
     creatorId: "u1",
     episodes,
@@ -132,9 +129,9 @@ const comics: Record<string, Comic> = {
   },
   mh4: {
     id: "mh4",
-    title: "The Beginning After The End",
-    coverUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop&crop=center",
-    genres: ["Fantasy", "Action"], // TEMPORARILY changed from Fantasy/Romance
+    title: "Second Life Sovereign",
+    coverUrl: "https://picsum.photos/seed/mh4-secondlifesovereign/400/600",
+    genres: ["Fantasy", "Action"],
     format: "Manhwa",
     creatorId: "u1",
     episodes,
