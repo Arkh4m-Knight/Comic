@@ -9,6 +9,14 @@ export interface Episode {
   createdAt: string;
 }
 
+export type Mood =
+  | "Escape Tonight"
+  | "Quick Read"
+  | "Gut Punch"
+  | "Edge of Your Seat"
+  | "Slow Burn"
+  | "Feel Good";
+
 export interface Comic {
   id: string;
   title: string;
@@ -18,6 +26,7 @@ export interface Comic {
   creatorId: string;
   episodes: Episode[];
   avgRating: number;
+  moods?: Mood[];
 }
 
 export interface UserProfile {
