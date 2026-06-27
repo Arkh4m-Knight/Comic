@@ -1,5 +1,6 @@
 "use client";
-import { listTrendingComics, listLightNovels } from "@/src/lib/mock";
+import { listTrendingComics, listLightNovels, ALL_MOODS } from "@/src/lib/mock";
+import { Mood } from "@/src/types";
 import { useState, useEffect } from "react";
 import AuthModal from "@/src/components/AuthModal";
 import ComicCard from "@/src/components/ComicCard";
@@ -11,6 +12,11 @@ export default function HomePage() {
   const mangaOnly = comics.filter((c) => c.format === "Manga");
   const manhwaOnly = comics.filter((c) => c.format === "Manhwa");
   const lightNovels = listLightNovels();
+
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
+  const moodResults = selectedMood
+    ? comics.filter((c) => c.moods?.includes(selectedMood))
+    : null;
 
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -99,31 +105,69 @@ export default function HomePage() {
 
       <div className="mx-auto max-w-6xl space-y-16 px-6 py-16">
         <section>
-          <SectionHeader eyebrow="Trending" title="Comics" />
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
-            {comicsOnly.map((c) => (
-              <ComicCard key={c.id} comic={c} />
+          <p className="mb-4 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
+            What are you in the mood for?
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {ALL_MOODS.map((mood) => (
+              <button
+                key={mood}
+                onClick={() => setSelectedMood(selectedMood === mood ? null : mood)}
+                className={`rounded-full border px-4 py-2 text-xs transition-colors ${
+                  selectedMood === mood
+                    ? "border-foil bg-foil text-ink-950"
+                    : "border-line text-paper-soft hover:border-foil hover:text-paper"
+                }`}
+              >
+                {mood}
+              </button>
             ))}
           </div>
         </section>
 
-        <section>
-          <SectionHeader eyebrow="Trending" title="Manga" />
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
-            {mangaOnly.map((c) => (
-              <ComicCard key={c.id} comic={c} />
-            ))}
-          </div>
-        </section>
+        {moodResults ? (
+          <section>
+            <SectionHeader eyebrow="For your mood" title={selectedMood!} />
+            {moodResults.length === 0 ? (
+              <p className="text-sm text-paper-soft">Nothing tagged for this mood yet — check back soon.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
+                {moodResults.map((c) => (
+                  <ComicCard key={c.id} comic={c} />
+                ))}
+              </div>
+            )}
+          </section>
+        ) : (
+          <>
+            <section>
+              <SectionHeader eyebrow="Trending" title="Comics" />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
+                {comicsOnly.map((c) => (
+                  <ComicCard key={c.id} comic={c} />
+                ))}
+              </div>
+            </section>
 
-        <section>
-          <SectionHeader eyebrow="Trending" title="Manhwa" />
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
-            {manhwaOnly.map((c) => (
-              <ComicCard key={c.id} comic={c} />
-            ))}
-          </div>
-        </section>
+            <section>
+              <SectionHeader eyebrow="Trending" title="Manga" />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
+                {mangaOnly.map((c) => (
+                  <ComicCard key={c.id} comic={c} />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <SectionHeader eyebrow="Trending" title="Manhwa" />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4">
+                {manhwaOnly.map((c) => (
+                  <ComicCard key={c.id} comic={c} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
 
         <section>
           <SectionHeader eyebrow="From the Shelf" title="Light Novels" />

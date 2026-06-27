@@ -41,3 +41,21 @@ a {
 .hairline {
   border-color: #2A2A2F;
 }
+
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes reveal-in-back {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-reveal-in {
+  animation: reveal-in 280ms ease-out;
+}
+
+.animate-reveal-in-back {
+  animation: reveal-in-back 280ms ease-out;
+}

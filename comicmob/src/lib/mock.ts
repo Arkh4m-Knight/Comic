@@ -1,4 +1,4 @@
-import { Comic, Episode, Review, UserProfile, LightNovel } from "../types";
+import { Comic, Episode, Review, UserProfile, LightNovel, Mood } from "../types";
 
 // Simple in-memory mock store for demo purposes only.
 const users: Record<string, UserProfile> = {
@@ -26,6 +26,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.4,
+    moods: ["Edge of Your Seat", "Escape Tonight"],
   },
   c2: {
     id: "c2",
@@ -36,6 +37,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.1,
+    moods: ["Quick Read", "Edge of Your Seat"],
   },
   c3: {
     id: "c3",
@@ -46,6 +48,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.3,
+    moods: ["Edge of Your Seat", "Quick Read"],
   },
   c4: {
     id: "c4",
@@ -56,6 +59,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.5,
+    moods: ["Escape Tonight", "Slow Burn"],
   },
   m1: {
     id: "m1",
@@ -66,6 +70,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.6,
+    moods: ["Edge of Your Seat", "Gut Punch"],
   },
   m2: {
     id: "m2",
@@ -76,6 +81,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.2,
+    moods: ["Slow Burn", "Gut Punch"],
   },
   m3: {
     id: "m3",
@@ -86,6 +92,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.7,
+    moods: ["Slow Burn", "Escape Tonight"],
   },
   m4: {
     id: "m4",
@@ -96,6 +103,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.0,
+    moods: ["Feel Good", "Quick Read"],
   },
   mh1: {
     id: "mh1",
@@ -106,6 +114,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.2,
+    moods: ["Escape Tonight", "Quick Read"],
   },
   mh2: {
     id: "mh2",
@@ -116,6 +125,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.8,
+    moods: ["Edge of Your Seat", "Gut Punch"],
   },
   mh3: {
     id: "mh3",
@@ -126,6 +136,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.6,
+    moods: ["Slow Burn", "Escape Tonight"],
   },
   mh4: {
     id: "mh4",
@@ -136,6 +147,7 @@ const comics: Record<string, Comic> = {
     creatorId: "u1",
     episodes,
     avgRating: 4.4,
+    moods: ["Feel Good", "Slow Burn"],
   },
 };
 
@@ -198,6 +210,15 @@ interface AuthUser {
 
 let authUsers: AuthUser[] = [];
 let currentUser: AuthUser | null = null;
+
+export const ALL_MOODS: Mood[] = [
+  "Escape Tonight",
+  "Quick Read",
+  "Gut Punch",
+  "Edge of Your Seat",
+  "Slow Burn",
+  "Feel Good",
+];
 
 export function listTrendingComics(): Comic[] {
   return Object.values(comics);
