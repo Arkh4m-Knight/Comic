@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import LibraryLink from "@/src/components/LibraryLink";
+import AuthStatus from "@/src/components/AuthStatus";
 
 export const metadata: Metadata = {
   title: "ComicMob",
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <a href="/reviews" className="hover:text-white">Reviews</a>
               <a href="/light-novels" className="hover:text-white">Light Novels</a>
               <LibraryLink />
+              <AuthStatus />
               <div className="flex gap-2 ml-4">
                 <a className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-white hover:bg-brand-dark" href="/reader">Start Reading</a>
                 <a className="rounded-md border border-neutral-700 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-800" href="/creator">Become Creator</a>

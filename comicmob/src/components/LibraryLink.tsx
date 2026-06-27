@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import SignupModal from "@/src/components/SignupModal";
+import AuthModal from "@/src/components/AuthModal";
 
 interface User {
   id: string;
@@ -48,13 +48,13 @@ export default function LibraryLink() {
         Library
       </a>
       
-      <SignupModal 
-        isOpen={showSignup} 
-        onClose={() => setShowSignup(false)} 
+      <AuthModal
+        isOpen={showSignup}
+        onClose={() => setShowSignup(false)}
         onSuccess={() => {
-          // Redirect to library after successful signup
+          // Redirect to library after successful signup/signin
           window.location.href = "/library";
-        }} 
+        }}
       />
     </>
   );
