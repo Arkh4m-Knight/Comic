@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import AuthModal from "@/src/components/AuthModal";
 import ComicCard from "@/src/components/ComicCard";
 import SectionHeader from "@/src/components/SectionHeader";
+import GoldGlyph from "@/src/components/GoldGlyph";
 
 export default function HomePage() {
   const comics = listTrendingComics();
@@ -90,6 +91,8 @@ export default function HomePage() {
 
           {/* Floating cover + peek of next item, in negative space */}
           <div className="relative hidden h-[460px] w-[420px] lg:block">
+            <GoldGlyph className="absolute -right-16 -top-16 h-56 w-56 animate-slow-spin opacity-90" />
+
             <div className="absolute right-0 top-1/2 h-[400px] w-[260px] -translate-y-1/2 overflow-hidden rounded-sm opacity-70">
               {carouselComics[(currentSlide + 1) % carouselComics.length]?.coverUrl && (
                 <img
