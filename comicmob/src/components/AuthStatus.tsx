@@ -42,16 +42,16 @@ export default function AuthStatus() {
   }
 
   if (loading) {
-    return <div className="h-8 w-16 animate-pulse rounded-md bg-neutral-800" />;
+    return <div className="h-6 w-14 animate-pulse rounded-sm bg-ink-800" />;
   }
 
   if (user) {
     return (
-      <div className="flex items-center gap-3 text-sm">
-        <span className="text-neutral-300">{user.displayName || user.username || user.email}</span>
+      <div className="flex items-center gap-3 normal-case tracking-normal">
+        <span className="text-paper-soft">{user.displayName || user.username || user.email}</span>
         <button
           onClick={handleSignOut}
-          className="rounded-md border border-neutral-700 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-800"
+          className="rounded-sm border border-line px-3 py-1.5 text-paper transition-colors hover:border-foil"
         >
           Sign Out
         </button>
@@ -63,7 +63,7 @@ export default function AuthStatus() {
     <>
       <button
         onClick={() => setShowAuth(true)}
-        className="rounded-md border border-neutral-700 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-800"
+        className="rounded-sm border border-line px-3 py-1.5 normal-case tracking-normal text-paper transition-colors hover:border-foil"
       >
         Sign In
       </button>

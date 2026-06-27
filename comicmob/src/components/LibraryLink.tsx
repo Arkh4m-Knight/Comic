@@ -43,7 +43,7 @@ export default function LibraryLink() {
       <a 
         href={user ? "/library" : "#"} 
         onClick={handleClick}
-        className="hover:text-white"
+        className="transition-colors hover:text-paper"
       >
         Library
       </a>
