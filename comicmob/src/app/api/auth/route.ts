@@ -1,41 +1,58 @@
 import { NextResponse } from "next/server";
-import { signUp, signIn, getCurrentUser, addToLibrary } from "@/src/lib/mock";
+import { createClient } from "@/src/lib/supabase/server";
 
 export async function POST(req: Request) {
   const body = await req.json();
   const { email, username, password, action } = body ?? {};
+  const supabase = await createClient();
 
   if (action === "signup") {
     if (!email || !username || !password) {
-      return NextResponse.json({ error: "Email, username, and password are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email, username, and password are required" },
+        { status: 400 }
+      );
     }
-    const user = signUp(email, username, password);
-    if (!user) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username, display_name: username },
+      },
+    });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    return NextResponse.json({ user: { id: user.id, email: user.email, username: user.username } });
+
+    return NextResponse.json({
+      user: data.user ? { id: data.user.id, email: data.user.email, username } : null,
+      // Supabase emails a confirmation link by default. If "Confirm email" is
+      // turned on in Supabase Auth settings, the user must click that link
+      // before they can sign in.
+      needsEmailConfirmation: !data.session,
+    });
   }
 
   if (action === "signin") {
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
-    const user = signIn(email, password);
-    if (!user) {
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
-    return NextResponse.json({ user: { id: user.id, email: user.email, username: user.username } });
+
+    return NextResponse.json({
+      user: { id: data.user.id, email: data.user.email },
+    });
   }
 
-  if (action === "addToLibrary") {
-    const { comicId } = body;
-    if (!comicId) {
-      return NextResponse.json({ error: "Comic ID is required" }, { status: 400 });
-    }
-    const success = addToLibrary(comicId);
-    if (!success) {
-      return NextResponse.json({ error: "Not signed in or comic already in library" }, { status: 400 });
-    }
+  if (action === "signout") {
+    await supabase.auth.signOut();
     return NextResponse.json({ success: true });
   }
 
@@ -43,9 +60,26 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const user = getCurrentUser();
-  if (!user) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error || !data.user) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
-  return NextResponse.json({ user: { id: user.id, email: user.email, username: user.username } });
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, display_name, role")
+    .eq("id", data.user.id)
+    .single();
+
+  return NextResponse.json({
+    user: {
+      id: data.user.id,
+      email: data.user.email,
+      username: profile?.username,
+      displayName: profile?.display_name,
+      role: profile?.role,
+    },
+  });
 }

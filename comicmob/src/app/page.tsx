@@ -1,7 +1,7 @@
 "use client";
 import { listTrendingComics, listLightNovels } from "@/src/lib/mock";
 import { useState, useEffect } from "react";
-import SignupModal from "@/src/components/SignupModal";
+import AuthModal from "@/src/components/AuthModal";
 
 export default function HomePage() {
   const comics = listTrendingComics();
@@ -183,7 +183,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <SignupModal 
+      <AuthModal 
         isOpen={showSignup} 
         onClose={() => setShowSignup(false)} 
         onSuccess={() => {
