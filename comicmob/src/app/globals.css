@@ -59,3 +59,12 @@ a {
 .animate-reveal-in-back {
   animation: reveal-in-back 280ms ease-out;
 }
+
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-slow-spin {
+  animation: slow-spin 60s linear infinite;
+}
