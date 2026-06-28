@@ -1,24 +1,20 @@
-import { getStoryBySlug, getChapter, listStories } from "@/src/lib/stories";
+import { getStoryBySlug, getChapter, listChapterNumbers } from "@/src/lib/stories-db";
 import ChapterReader from "@/src/components/ChapterReader";
 import { notFound } from "next/navigation";
 
-export function generateStaticParams() {
-  return listStories().flatMap((story) =>
-    story.chapters.map((c) => ({ slug: story.slug, number: String(c.number) }))
-  );
-}
-
-export default function ChapterPage({
+export default async function ChapterPage({
   params,
 }: {
   params: { slug: string; number: string };
 }) {
-  const story = getStoryBySlug(params.slug);
+  const story = await getStoryBySlug(params.slug);
   if (!story) return notFound();
 
   const chapterNumber = parseInt(params.number, 10);
-  const chapter = getChapter(story, chapterNumber);
+  const chapter = await getChapter(story.id, chapterNumber);
   if (!chapter) return notFound();
+
+  const allNumbers = await listChapterNumbers(story.id);
 
   return (
     <ChapterReader
@@ -27,8 +23,8 @@ export default function ChapterPage({
       accent={story.accent}
       chapterNumber={chapter.number}
       chapterTitle={chapter.title}
-      paragraphs={chapter.paragraphs}
-      totalChapters={story.chapters.length}
+      paragraphs={chapter.content.split("\n\n").filter(Boolean)}
+      totalChapters={allNumbers.length}
     />
   );
 }

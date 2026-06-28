@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import AuthStatus from "@/src/components/AuthStatus";
-import { listStories } from "@/src/lib/stories";
 
-const navLinks = listStories().map((s) => ({ href: `/story/${s.slug}`, label: s.title }));
+const navLinks = [
+  { href: "/#originals", label: "Originals" },
+  { href: "/#community", label: "Community" },
+  { href: "/publish", label: "Publish" },
+];
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
