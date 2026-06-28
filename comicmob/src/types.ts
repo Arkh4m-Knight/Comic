@@ -1,11 +1,9 @@
 export type Genre = "Action" | "Fantasy" | "Sci-Fi" | "Romance" | "Comedy" | "Drama" | "Adventure" | "Mystery" | "Horror" | "Thriller" | "Western" | "Animation" | "Documentary" | "Family" | "Music" | "Travel" | "History" | "Sports" | "Business" | "Technology" | "Fashion" | "Food" | "Health" | "Education" | "Other" | "Historical";
 
-export interface Episode {
-  id: string;
-  title: string;
+export interface Chapter {
   number: number;
-  imageUrls: string[];
-  createdAt: string;
+  title: string;
+  paragraphs: string[];
 }
 
 export type FormatStatus = "available" | "in-development" | "planned";
@@ -18,11 +16,10 @@ export interface Story {
   hook: string;
   accent: string; // hex accent color, distinct per story
   formats: {
-    lightNovel: FormatStatus;
     manga: FormatStatus;
     animation: FormatStatus;
   };
-  episodes: Episode[]; // light novel chapters, once written
+  chapters: Chapter[]; // light novel chapters -- empty until real ones are added
 }
 
 export interface UserProfile {

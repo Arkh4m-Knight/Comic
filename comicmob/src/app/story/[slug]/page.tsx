@@ -1,4 +1,4 @@
-import { getStoryBySlug, listStories } from "@/src/lib/stories";
+import { getStoryBySlug, listStories, lightNovelStatus } from "@/src/lib/stories";
 import OpenBook from "@/src/components/OpenBook";
 import { FormatStatus } from "@/src/types";
 import Link from "next/link";
@@ -84,12 +84,22 @@ export default function StoryHubPage({ params }: { params: { slug: string } }) {
             &ldquo;{story.hook}&rdquo;
           </p>
 
+          {story.chapters.length > 0 && (
+            <Link
+              href={`/story/${story.slug}/chapter/1`}
+              className="mt-8 inline-block rounded-sm px-7 py-3 text-sm font-semibold text-ink-950"
+              style={{ backgroundColor: story.accent }}
+            >
+              Start Reading
+            </Link>
+          )}
+
           <div className="mt-12">
             <p className="mb-2 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
               The Roadmap
             </p>
             <div className="rounded-sm border border-line px-2">
-              <RoadmapStep label="Light Novel" status={story.formats.lightNovel} accent={story.accent} />
+              <RoadmapStep label="Light Novel" status={lightNovelStatus(story)} accent={story.accent} />
               <RoadmapStep label="Manga / Manhwa" status={story.formats.manga} accent={story.accent} />
               <RoadmapStep label="Animation" status={story.formats.animation} accent={story.accent} />
             </div>

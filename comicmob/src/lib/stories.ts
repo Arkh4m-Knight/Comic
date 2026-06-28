@@ -1,9 +1,10 @@
-import { Story } from "../types";
+import { Story, FormatStatus } from "../types";
 
-// The four ComicMob Originals. Status defaults to "in-development" for
-// light novel and "planned" for manga/animation since only loglines exist
-// so far, not finished chapters or art -- update these as real progress
-// happens, rather than showing "available" before there's anything to read.
+// The four ComicMob Originals. Manga/animation status is set manually
+// below (update as real progress happens). Light novel status, shown via
+// lightNovelStatus(story), is derived from whether chapters actually
+// exist -- once you add a story's first chapter here, its hub page
+// switches to "Available Now" automatically, no separate flag to remember.
 export const stories: Story[] = [
   {
     id: "orphanage",
@@ -13,11 +14,10 @@ export const stories: Story[] = [
     hook: "A group of orphans fights for justice in a world that left them behind.",
     accent: "#C9A227", // gold -- flagship
     formats: {
-      lightNovel: "in-development",
       manga: "planned",
       animation: "planned",
     },
-    episodes: [],
+    chapters: [],
   },
   {
     id: "unloved-boy",
@@ -27,11 +27,10 @@ export const stories: Story[] = [
     hook: "Two lonely individuals meet and carve out a path of their own.",
     accent: "#B5746B", // dusty rose/copper
     formats: {
-      lightNovel: "in-development",
       manga: "planned",
       animation: "planned",
     },
-    episodes: [],
+    chapters: [],
   },
   {
     id: "chaabuk",
@@ -41,11 +40,10 @@ export const stories: Story[] = [
     hook: "A book bound by an evil spirit seeks to dominate the world.",
     accent: "#7A2424", // oxblood
     formats: {
-      lightNovel: "in-development",
       manga: "planned",
       animation: "planned",
     },
-    episodes: [],
+    chapters: [],
   },
   {
     id: "lock-x",
@@ -55,11 +53,10 @@ export const stories: Story[] = [
     hook: "Scattered individuals unite against a sinister kingdom that wants to rule the universe.",
     accent: "#3E6E8C", // steel blue
     formats: {
-      lightNovel: "in-development",
       manga: "planned",
       animation: "planned",
     },
-    episodes: [],
+    chapters: [],
   },
 ];
 
@@ -69,4 +66,12 @@ export function listStories(): Story[] {
 
 export function getStoryBySlug(slug: string): Story | undefined {
   return stories.find((s) => s.slug === slug);
+}
+
+export function lightNovelStatus(story: Story): FormatStatus {
+  return story.chapters.length > 0 ? "available" : "in-development";
+}
+
+export function getChapter(story: Story, number: number) {
+  return story.chapters.find((c) => c.number === number);
 }
