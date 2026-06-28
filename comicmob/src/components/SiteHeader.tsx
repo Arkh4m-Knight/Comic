@@ -1,12 +1,22 @@
 "use client";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import AuthStatus from "@/src/components/AuthStatus";
-import { listStories } from "@/src/lib/stories";
 
-const navLinks = listStories().map((s) => ({ href: `/story/${s.slug}`, label: s.title }));
+const navLinks = [
+  { href: "/#originals", label: "Originals" },
+  { href: "/#community", label: "Community" },
+  { href: "/publish", label: "Publish" },
+];
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Chapter reading pages have their own slim top bar (back link, chapter
+  // title, font controls) -- showing the full site nav above it as well
+  // defeats the point of a quiet, focused reading view.
+  if (pathname?.includes("/chapter/")) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-ink-950/85 backdrop-blur">

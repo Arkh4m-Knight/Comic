@@ -1,9 +1,10 @@
-import { listStories } from "@/src/lib/stories";
+import { listOriginals, listCommunityStories } from "@/src/lib/stories-db";
 import StoryCover from "@/src/components/StoryCover";
 import GoldGlyph from "@/src/components/GoldGlyph";
 
-export default function HomePage() {
-  const stories = listStories();
+export default async function HomePage() {
+  const originals = await listOriginals();
+  const community = await listCommunityStories();
 
   return (
     <div>
@@ -26,12 +27,12 @@ export default function HomePage() {
       </section>
 
       {/* Four Volumes shelf */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      <section id="originals" className="mx-auto max-w-6xl px-6 py-20">
         <p className="mb-10 text-center text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
           The Four Volumes
         </p>
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stories.map((story) => (
+          {originals.map((story) => (
             <a
               key={story.id}
               href={`/story/${story.slug}`}
@@ -58,6 +59,59 @@ export default function HomePage() {
             </a>
           ))}
         </div>
+      </section>
+
+      {/* Community stories */}
+      <section id="community" className="mx-auto max-w-6xl border-t border-line px-6 py-20">
+        <div className="mb-10 flex items-center justify-between">
+          <p className="text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
+            From the Community
+          </p>
+          <a
+            href="/publish"
+            className="rounded-sm border border-line px-4 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
+          >
+            Publish Your Own
+          </a>
+        </div>
+
+        {community.length === 0 ? (
+          <p className="text-sm text-paper-soft">
+            No community stories yet — be the first to publish one.
+          </p>
+        ) : (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {community.map((story) => (
+              <a
+                key={story.id}
+                href={`/story/${story.slug}`}
+                className="group block"
+                style={{ "--story-accent": story.accent } as React.CSSProperties}
+              >
+                <div className="overflow-hidden rounded-sm border border-line transition-colors group-hover:border-[var(--story-accent)]">
+                  <StoryCover
+                    title={story.title}
+                    accent={story.accent}
+                    className="aspect-[2/3] w-full transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
+                </div>
+                <div className="pt-4">
+                  <p
+                    className="text-[10px] font-medium uppercase tracking-widest2"
+                    style={{ color: story.accent }}
+                  >
+                    {story.genres.join(" · ")}
+                  </p>
+                  <p className="mt-1 font-display text-xl italic text-paper">{story.title}</p>
+                  {story.creator_name && (
+                    <p className="mt-1 text-[11px] text-paper-faint">by {story.creator_name}</p>
+                  )}
+                  <p className="mt-2 text-xs leading-relaxed text-paper-soft">{story.hook}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -1,57 +1,41 @@
-import { getStoryBySlug, listStories } from "@/src/lib/stories";
+import { getStoryBySlug } from "@/src/lib/stories-db";
 import OpenBook from "@/src/components/OpenBook";
-import { FormatStatus } from "@/src/types";
 import Link from "next/link";
-
-export function generateStaticParams() {
-  return listStories().map((s) => ({ slug: s.slug }));
-}
-
-const statusLabel: Record<FormatStatus, string> = {
-  available: "Available Now",
-  "in-development": "In Development",
-  planned: "Planned",
-};
+import { notFound } from "next/navigation";
 
 function RoadmapStep({
   label,
-  status,
+  available,
   accent,
 }: {
   label: string;
-  status: FormatStatus;
+  available: boolean;
   accent: string;
 }) {
-  const isAvailable = status === "available";
   return (
     <div className="flex items-center gap-4 border-b border-line py-5 last:border-b-0">
       <div
         className="h-2 w-2 flex-shrink-0 rounded-full"
-        style={{ backgroundColor: isAvailable ? accent : "#3A3A3F" }}
+        style={{ backgroundColor: available ? accent : "#3A3A3F" }}
       />
       <div className="flex-1">
         <p className="font-display text-lg italic text-paper">{label}</p>
       </div>
       <span
         className="text-[10px] font-medium uppercase tracking-widest2"
-        style={{ color: isAvailable ? accent : undefined }}
+        style={{ color: available ? accent : undefined }}
       >
-        <span className={isAvailable ? "" : "text-paper-faint"}>{statusLabel[status]}</span>
+        <span className={available ? "" : "text-paper-faint"}>
+          {available ? "Available Now" : "In Development"}
+        </span>
       </span>
     </div>
   );
 }
 
-export default function StoryHubPage({ params }: { params: { slug: string } }) {
-  const story = getStoryBySlug(params.slug);
-
-  if (!story) {
-    return (
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center text-paper-soft">
-        Story not found.
-      </div>
-    );
-  }
+export default async function StoryHubPage({ params }: { params: { slug: string } }) {
+  const story = await getStoryBySlug(params.slug);
+  if (!story) return notFound();
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -77,6 +61,11 @@ export default function StoryHubPage({ params }: { params: { slug: string } }) {
           <h1 className="font-display text-4xl italic leading-tight text-paper sm:text-5xl">
             {story.title}
           </h1>
+          {!story.is_original && story.creator_name && (
+            <p className="mt-2 text-xs uppercase tracking-widest2 text-paper-faint">
+              by {story.creator_name}
+            </p>
+          )}
           <p
             className="mt-6 max-w-xl border-l-2 pl-4 font-display text-xl italic leading-relaxed text-paper-soft"
             style={{ borderColor: story.accent }}
@@ -84,19 +73,35 @@ export default function StoryHubPage({ params }: { params: { slug: string } }) {
             &ldquo;{story.hook}&rdquo;
           </p>
 
-          <div className="mt-12">
-            <p className="mb-2 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
-              The Roadmap
-            </p>
-            <div className="rounded-sm border border-line px-2">
-              <RoadmapStep label="Light Novel" status={story.formats.lightNovel} accent={story.accent} />
-              <RoadmapStep label="Manga / Manhwa" status={story.formats.manga} accent={story.accent} />
-              <RoadmapStep label="Animation" status={story.formats.animation} accent={story.accent} />
+          {story.chapter_count > 0 && (
+            <Link
+              href={`/story/${story.slug}/chapter/1`}
+              className="mt-8 inline-block rounded-sm px-7 py-3 text-sm font-semibold text-ink-950"
+              style={{ backgroundColor: story.accent }}
+            >
+              Start Reading
+            </Link>
+          )}
+
+          {story.is_original ? (
+            <div className="mt-12">
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
+                The Roadmap
+              </p>
+              <div className="rounded-sm border border-line px-2">
+                <RoadmapStep label="Light Novel" available={story.chapter_count > 0} accent={story.accent} />
+                <RoadmapStep label="Manga / Manhwa" available={false} accent={story.accent} />
+                <RoadmapStep label="Animation" available={false} accent={story.accent} />
+              </div>
+              <p className="mt-4 text-xs text-paper-faint">
+                Each format moves forward as the story and reader demand grow.
+              </p>
             </div>
-            <p className="mt-4 text-xs text-paper-faint">
-              Each format moves forward as the story and reader demand grow.
+          ) : (
+            <p className="mt-12 text-xs text-paper-faint">
+              {story.chapter_count} chapter{story.chapter_count === 1 ? "" : "s"} published
             </p>
-          </div>
+          )}
         </div>
       </div>
     </div>
