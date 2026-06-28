@@ -9,6 +9,7 @@ export interface DbStory {
   accent: string;
   is_original: boolean;
   creator_id: string | null;
+  cover_url: string | null;
   creator_name?: string | null;
   chapter_count: number;
 }
@@ -25,7 +26,7 @@ export async function listOriginals(): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, slug, title, hook, genres, accent, is_original, creator_id, story_chapters(count)")
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
     .eq("is_original", true)
     .order("created_at", { ascending: true });
 
@@ -40,7 +41,7 @@ export async function listCommunityStories(): Promise<DbStory[]> {
   const { data } = await supabase
     .from("stories")
     .select(
-      "id, slug, title, hook, genres, accent, is_original, creator_id, profiles(display_name), story_chapters(count)"
+      "id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, profiles(display_name), story_chapters(count)"
     )
     .eq("is_original", false)
     .order("created_at", { ascending: false });
@@ -57,7 +58,7 @@ export async function getStoryBySlug(slug: string): Promise<DbStory | null> {
   const { data } = await supabase
     .from("stories")
     .select(
-      "id, slug, title, hook, genres, accent, is_original, creator_id, profiles(display_name), story_chapters(count)"
+      "id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, profiles(display_name), story_chapters(count)"
     )
     .eq("slug", slug)
     .single();
@@ -95,7 +96,7 @@ export async function getMyStories(userId: string): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, slug, title, hook, genres, accent, is_original, creator_id, story_chapters(count)")
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
     .eq("creator_id", userId)
     .order("created_at", { ascending: false });
 

@@ -48,7 +48,16 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
 
       <div className="grid items-center gap-10 lg:grid-cols-[1fr_1fr]">
         <div className="flex justify-center">
-          <OpenBook accent={story.accent} className="w-full max-w-md" />
+          {story.cover_url ? (
+            <div
+              className="w-full max-w-xs overflow-hidden rounded-sm border"
+              style={{ borderColor: story.accent + "80" }}
+            >
+              <img src={story.cover_url} alt={story.title} className="aspect-[2/3] w-full object-cover" />
+            </div>
+          ) : (
+            <OpenBook accent={story.accent} className="w-full max-w-md" />
+          )}
         </div>
 
         <div>
