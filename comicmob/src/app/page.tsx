@@ -1,5 +1,5 @@
 import { listOriginals, listCommunityStories } from "@/src/lib/stories-db";
-import StoryCover from "@/src/components/StoryCover";
+import Cover from "@/src/components/Cover";
 import GoldGlyph from "@/src/components/GoldGlyph";
 
 export default async function HomePage() {
@@ -40,9 +40,10 @@ export default async function HomePage() {
               style={{ "--story-accent": story.accent } as React.CSSProperties}
             >
               <div className="overflow-hidden rounded-sm border border-line transition-colors group-hover:border-[var(--story-accent)]">
-                <StoryCover
+                <Cover
                   title={story.title}
                   accent={story.accent}
+                  coverUrl={story.cover_url}
                   className="aspect-[2/3] w-full transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
@@ -89,9 +90,10 @@ export default async function HomePage() {
                 style={{ "--story-accent": story.accent } as React.CSSProperties}
               >
                 <div className="overflow-hidden rounded-sm border border-line transition-colors group-hover:border-[var(--story-accent)]">
-                  <StoryCover
+                  <Cover
                     title={story.title}
                     accent={story.accent}
+                    coverUrl={story.cover_url}
                     className="aspect-[2/3] w-full transition-transform duration-500 group-hover:scale-[1.02]"
                   />
                 </div>
