@@ -1,5 +1,5 @@
 import { getStoryBySlug, listStories } from "@/src/lib/stories";
-import StoryCover from "@/src/components/StoryCover";
+import OpenBook from "@/src/components/OpenBook";
 import { FormatStatus } from "@/src/types";
 import Link from "next/link";
 
@@ -62,12 +62,9 @@ export default function StoryHubPage({ params }: { params: { slug: string } }) {
         ← All Stories
       </Link>
 
-      <div className="grid gap-12 lg:grid-cols-[280px_1fr]">
-        <div
-          className="overflow-hidden rounded-sm border"
-          style={{ borderColor: story.accent + "80" }}
-        >
-          <StoryCover title={story.title} accent={story.accent} className="aspect-[2/3] w-full" />
+      <div className="grid items-center gap-10 lg:grid-cols-[1fr_1fr]">
+        <div className="flex justify-center">
+          <OpenBook accent={story.accent} className="w-full max-w-md" />
         </div>
 
         <div>
@@ -80,7 +77,12 @@ export default function StoryHubPage({ params }: { params: { slug: string } }) {
           <h1 className="font-display text-4xl italic leading-tight text-paper sm:text-5xl">
             {story.title}
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-paper-soft">{story.hook}</p>
+          <p
+            className="mt-6 max-w-xl border-l-2 pl-4 font-display text-xl italic leading-relaxed text-paper-soft"
+            style={{ borderColor: story.accent }}
+          >
+            &ldquo;{story.hook}&rdquo;
+          </p>
 
           <div className="mt-12">
             <p className="mb-2 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
