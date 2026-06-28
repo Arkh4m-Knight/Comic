@@ -20,7 +20,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "ComicMob",
-  description: "Where comics come alive.",
+  description: "Four worlds. One studio.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               Comic<span className="text-foil">Mob</span>
             </a>
             <p className="text-xs uppercase tracking-widest2 text-paper-faint">
-              Where comics come alive
+              Four worlds. One studio.
             </p>
             <p className="mt-4 text-xs text-paper-faint">
               © {new Date().getFullYear()} ComicMob

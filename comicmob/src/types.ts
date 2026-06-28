@@ -53,6 +53,23 @@ export interface Review {
   type: "Critic" | "User";
 }
 
+export type FormatStatus = "available" | "in-development" | "planned";
+
+export interface Story {
+  id: string;
+  slug: string;
+  title: string;
+  genres: Genre[];
+  hook: string;
+  accent: string; // hex accent color, distinct per story
+  formats: {
+    lightNovel: FormatStatus;
+    manga: FormatStatus;
+    animation: FormatStatus;
+  };
+  episodes: Episode[]; // light novel chapters, once written
+}
+
 export interface LightNovel {
   id: string;
   title: string;

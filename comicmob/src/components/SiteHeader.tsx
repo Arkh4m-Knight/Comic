@@ -1,14 +1,9 @@
 "use client";
 import { useState } from "react";
-import LibraryLink from "@/src/components/LibraryLink";
 import AuthStatus from "@/src/components/AuthStatus";
+import { listStories } from "@/src/lib/stories";
 
-const navLinks = [
-  { href: "/reader", label: "Reader" },
-  { href: "/creator", label: "Creator" },
-  { href: "/reviews", label: "Reviews" },
-  { href: "/light-novels", label: "Light Novels" },
-];
+const navLinks = listStories().map((s) => ({ href: `/story/${s.slug}`, label: s.title }));
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,7 +22,6 @@ export default function SiteHeader() {
               {link.label}
             </a>
           ))}
-          <LibraryLink />
           <div className="h-4 w-px bg-line" />
           <AuthStatus />
         </nav>
@@ -66,9 +60,6 @@ export default function SiteHeader() {
               {link.label}
             </a>
           ))}
-          <div onClick={() => setMenuOpen(false)}>
-            <LibraryLink />
-          </div>
         </nav>
       )}
     </header>
