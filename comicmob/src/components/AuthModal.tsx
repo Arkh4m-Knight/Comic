@@ -34,10 +34,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         ),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(data.error || `${mode === "signup" ? "Signup" : "Sign in"} failed`);
+        const message =
+          typeof data?.error === "string" && data.error.length > 0
+            ? data.error
+            : `${mode === "signup" ? "Signup" : "Sign in"} failed. Please try again.`;
+        throw new Error(message);
       }
 
       if (mode === "signup" && data.needsEmailConfirmation) {
