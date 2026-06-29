@@ -115,6 +115,12 @@ export async function listChapterNumbers(storyId: string): Promise<number[]> {
   return (data ?? []).map((c) => c.number);
 }
 
+export async function isAdmin(userId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
+  return data?.role === "Admin";
+}
+
 export async function getMyStories(userId: string): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase

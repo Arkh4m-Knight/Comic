@@ -25,9 +25,13 @@ interface ChapterSummary {
 
 export default function PublishDashboard({
   myStories,
+  originals,
+  isAdmin,
   chaptersByStory,
 }: {
   myStories: DbStory[];
+  originals: DbStory[];
+  isAdmin: boolean;
   chaptersByStory: Record<string, ChapterSummary[]>;
 }) {
   const router = useRouter();
@@ -232,85 +236,103 @@ export default function PublishDashboard({
         </form>
       </section>
 
+      {isAdmin && (
+        <section>
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">
+            Studio Originals
+          </p>
+          <p className="mb-3 text-xs text-paper-faint">
+            Add chapters to the 4 ComicMob Originals. Visible only to the studio admin account.
+          </p>
+          <div className="divide-y divide-line rounded-sm border border-line">
+            {originals.map((s) => renderStoryRow(s, { allowDeleteStory: false }))}
+          </div>
+        </section>
+      )}
+
       <section>
         <p className="mb-2 text-[11px] font-medium uppercase tracking-widest2 text-paper-faint">My Stories</p>
         {myStories.length === 0 ? (
           <p className="text-sm text-paper-soft">You haven&apos;t published any stories yet.</p>
         ) : (
           <div className="divide-y divide-line rounded-sm border border-line">
-            {myStories.map((s) => {
-              const chapters = chaptersByStory[s.id] ?? [];
-              const isExpanded = expandedStory === s.id;
-              return (
-                <div key={s.id}>
-                  <div className="flex items-center justify-between px-5 py-4">
-                    <div>
-                      <p className="font-display text-lg italic text-paper">{s.title}</p>
-                      <button
-                        onClick={() => setExpandedStory(isExpanded ? null : s.id)}
-                        className="text-xs text-paper-faint underline hover:text-paper-soft"
-                      >
-                        {s.chapter_count} chapter(s) published {chapters.length > 0 && (isExpanded ? "(hide)" : "(show)")}
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label
-                        htmlFor={`cover-${s.id}`}
-                        className="cursor-pointer rounded-sm border border-line px-3 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
-                      >
-                        {uploadingCoverFor === s.id ? "Uploading..." : "Change Cover"}
-                      </label>
-                      <input
-                        id={`cover-${s.id}`}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={uploadingCoverFor === s.id}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleChangeCover(s.id, file);
-                        }}
-                      />
-                      <a
-                        href={`/publish/${s.slug}/new-chapter`}
-                        className="rounded-sm border border-line px-4 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
-                      >
-                        + Add Chapter
-                      </a>
-                      <button
-                        onClick={() => handleDeleteStory(s.id, s.title)}
-                        disabled={deletingId === s.id}
-                        className="rounded-sm border border-line px-3 py-2 text-xs uppercase tracking-widest2 text-red-400 hover:border-red-400 disabled:opacity-50"
-                      >
-                        {deletingId === s.id ? "..." : "Delete"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {isExpanded && chapters.length > 0 && (
-                    <div className="divide-y divide-line bg-ink-950 px-5">
-                      {chapters.map((c) => (
-                        <div key={c.id} className="flex items-center justify-between py-3">
-                          <span className="text-sm text-paper-soft">
-                            Ch. {c.number} — {c.title}
-                          </span>
-                          <button
-                            onClick={() => handleDeleteChapter(s.id, c.id, c.title)}
-                            disabled={deletingId === c.id}
-                            className="text-xs uppercase tracking-widest2 text-red-400 hover:underline disabled:opacity-50"
-                          >
-                            {deletingId === c.id ? "..." : "Delete"}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {myStories.map((s) => renderStoryRow(s, { allowDeleteStory: true }))}
           </div>
         )}
       </section>
     </div>
   );
+
+  function renderStoryRow(s: DbStory, options: { allowDeleteStory: boolean }) {
+    const chapters = chaptersByStory[s.id] ?? [];
+    const isExpanded = expandedStory === s.id;
+    return (
+      <div key={s.id}>
+        <div className="flex items-center justify-between px-5 py-4">
+          <div>
+            <p className="font-display text-lg italic text-paper">{s.title}</p>
+            <button
+              onClick={() => setExpandedStory(isExpanded ? null : s.id)}
+              className="text-xs text-paper-faint underline hover:text-paper-soft"
+            >
+              {s.chapter_count} chapter(s) published {chapters.length > 0 && (isExpanded ? "(hide)" : "(show)")}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor={`cover-${s.id}`}
+              className="cursor-pointer rounded-sm border border-line px-3 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
+            >
+              {uploadingCoverFor === s.id ? "Uploading..." : "Change Cover"}
+            </label>
+            <input
+              id={`cover-${s.id}`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingCoverFor === s.id}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleChangeCover(s.id, file);
+              }}
+            />
+            <a
+              href={`/publish/${s.slug}/new-chapter`}
+              className="rounded-sm border border-line px-4 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
+            >
+              + Add Chapter
+            </a>
+            {options.allowDeleteStory && (
+              <button
+                onClick={() => handleDeleteStory(s.id, s.title)}
+                disabled={deletingId === s.id}
+                className="rounded-sm border border-line px-3 py-2 text-xs uppercase tracking-widest2 text-red-400 hover:border-red-400 disabled:opacity-50"
+              >
+                {deletingId === s.id ? "..." : "Delete"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {isExpanded && chapters.length > 0 && (
+          <div className="divide-y divide-line bg-ink-950 px-5">
+            {chapters.map((c) => (
+              <div key={c.id} className="flex items-center justify-between py-3">
+                <span className="text-sm text-paper-soft">
+                  Ch. {c.number} — {c.title}
+                </span>
+                <button
+                  onClick={() => handleDeleteChapter(s.id, c.id, c.title)}
+                  disabled={deletingId === c.id}
+                  className="text-xs uppercase tracking-widest2 text-red-400 hover:underline disabled:opacity-50"
+                >
+                  {deletingId === c.id ? "..." : "Delete"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 }

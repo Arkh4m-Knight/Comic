@@ -9,14 +9,30 @@ export async function POST(req: Request, { params }: { params: { storyId: string
     return NextResponse.json({ error: "You must be signed in to publish a chapter." }, { status: 401 });
   }
 
-  // Confirm this user actually owns the story they're trying to add to.
+  // Confirm this user actually owns the story they're trying to add to --
+  // or, for the 4 Originals (no creator_id), that they're the studio admin.
   const { data: story } = await supabase
     .from("stories")
-    .select("id, creator_id")
+    .select("id, creator_id, is_original")
     .eq("id", params.storyId)
     .single();
 
-  if (!story || story.creator_id !== userData.user.id) {
+  if (!story) {
+    return NextResponse.json({ error: "Story not found." }, { status: 404 });
+  }
+
+  const isOwner = story.creator_id === userData.user.id;
+  let isAdminForOriginal = false;
+  if (!isOwner && story.is_original) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userData.user.id)
+      .maybeSingle();
+    isAdminForOriginal = profile?.role === "Admin";
+  }
+
+  if (!isOwner && !isAdminForOriginal) {
     return NextResponse.json({ error: "You can only add chapters to your own stories." }, { status: 403 });
   }
 

@@ -48,11 +48,26 @@ export async function PATCH(req: Request, { params }: { params: { storyId: strin
 
   const { data: story } = await supabase
     .from("stories")
-    .select("id, creator_id")
+    .select("id, creator_id, is_original")
     .eq("id", params.storyId)
     .single();
 
-  if (!story || story.creator_id !== userData.user.id) {
+  if (!story) {
+    return NextResponse.json({ error: "Story not found." }, { status: 404 });
+  }
+
+  const isOwner = story.creator_id === userData.user.id;
+  let isAdminForOriginal = false;
+  if (!isOwner && story.is_original) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userData.user.id)
+      .maybeSingle();
+    isAdminForOriginal = profile?.role === "Admin";
+  }
+
+  if (!isOwner && !isAdminForOriginal) {
     return NextResponse.json({ error: "You can only edit your own stories." }, { status: 403 });
   }
 
