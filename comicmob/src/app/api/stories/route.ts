@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "You must be signed in to publish a story." }, { status: 401 });
   }
 
-  const { title, hook, genres, accent } = await req.json();
+  const { title, hook, genres, accent, cover_url } = await req.json();
 
   if (!title || !hook) {
     return NextResponse.json({ error: "Title and hook are required." }, { status: 400 });
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       hook,
       genres: Array.isArray(genres) ? genres : [],
       accent: accent || "#C9A227",
+      cover_url: cover_url || null,
       is_original: false,
       creator_id: userData.user.id,
     })

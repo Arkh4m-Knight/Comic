@@ -37,3 +37,36 @@ export async function DELETE(req: Request, { params }: { params: { storyId: stri
 
   return NextResponse.json({ success: true });
 }
+
+export async function PATCH(req: Request, { params }: { params: { storyId: string } }) {
+  const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData.user) {
+    return NextResponse.json({ error: "You must be signed in." }, { status: 401 });
+  }
+
+  const { data: story } = await supabase
+    .from("stories")
+    .select("id, creator_id")
+    .eq("id", params.storyId)
+    .single();
+
+  if (!story || story.creator_id !== userData.user.id) {
+    return NextResponse.json({ error: "You can only edit your own stories." }, { status: 403 });
+  }
+
+  const { cover_url } = await req.json();
+
+  if (!cover_url) {
+    return NextResponse.json({ error: "cover_url is required." }, { status: 400 });
+  }
+
+  const { error } = await supabase.from("stories").update({ cover_url }).eq("id", params.storyId);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
+}
