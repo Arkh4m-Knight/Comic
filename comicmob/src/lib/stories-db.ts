@@ -22,6 +22,27 @@ export interface DbChapter {
   content: string;
 }
 
+// Looks up display names for a set of creator IDs in one query. Used
+// instead of embedding profiles(...) directly in the stories query --
+// that embed silently behaves like an inner join, which drops any row
+// whose creator_id is null (true for the 4 Originals, which are
+// studio-owned with no creator account), causing getStoryBySlug to
+// return nothing for them and the page to 404. A separate lookup avoids
+// this entirely and works the same regardless of null creator_ids.
+async function getDisplayNames(userIds: string[]): Promise<Record<string, string>> {
+  const ids = [...new Set(userIds.filter(Boolean))];
+  if (ids.length === 0) return {};
+
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("id, display_name").in("id", ids);
+
+  const map: Record<string, string> = {};
+  for (const row of data ?? []) {
+    map[row.id] = row.display_name;
+  }
+  return map;
+}
+
 export async function listOriginals(): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -40,15 +61,16 @@ export async function listCommunityStories(): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select(
-      "id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, profiles(display_name), story_chapters(count)"
-    )
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
     .eq("is_original", false)
     .order("created_at", { ascending: false });
 
-  return (data ?? []).map((s: any) => ({
+  const rows = data ?? [];
+  const names = await getDisplayNames(rows.map((s: any) => s.creator_id));
+
+  return rows.map((s: any) => ({
     ...s,
-    creator_name: s.profiles?.display_name ?? null,
+    creator_name: s.creator_id ? names[s.creator_id] ?? null : null,
     chapter_count: s.story_chapters?.[0]?.count ?? 0,
   }));
 }
@@ -57,16 +79,17 @@ export async function getStoryBySlug(slug: string): Promise<DbStory | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select(
-      "id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, profiles(display_name), story_chapters(count)"
-    )
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
 
   if (!data) return null;
+
+  const names = data.creator_id ? await getDisplayNames([data.creator_id]) : {};
+
   return {
     ...(data as any),
-    creator_name: (data as any).profiles?.display_name ?? null,
+    creator_name: data.creator_id ? names[data.creator_id] ?? null : null,
     chapter_count: (data as any).story_chapters?.[0]?.count ?? 0,
   };
 }
@@ -78,7 +101,7 @@ export async function getChapter(storyId: string, number: number): Promise<DbCha
     .select("id, story_id, number, title, content")
     .eq("story_id", storyId)
     .eq("number", number)
-    .single();
+    .maybeSingle();
   return data ?? null;
 }
 
@@ -127,17 +150,17 @@ export async function getFavoriteStories(userId: string): Promise<DbStory[]> {
   const { data } = await supabase
     .from("favorites")
     .select(
-      "story_id, stories(id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, profiles(display_name), story_chapters(count))"
+      "story_id, stories(id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count))"
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  return (data ?? [])
-    .map((f: any) => f.stories)
-    .filter(Boolean)
-    .map((s: any) => ({
-      ...s,
-      creator_name: s.profiles?.display_name ?? null,
-      chapter_count: s.story_chapters?.[0]?.count ?? 0,
-    }));
+  const rows = (data ?? []).map((f: any) => f.stories).filter(Boolean);
+  const names = await getDisplayNames(rows.map((s: any) => s.creator_id));
+
+  return rows.map((s: any) => ({
+    ...s,
+    creator_name: s.creator_id ? names[s.creator_id] ?? null : null,
+    chapter_count: s.story_chapters?.[0]?.count ?? 0,
+  }));
 }
