@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DbStory } from "@/src/lib/stories-db";
+import { uploadCoverImage } from "@/src/lib/upload-cover";
+import { createClient } from "@/src/lib/supabase/client";
 
 const ACCENT_OPTIONS = [
   { label: "Gold", value: "#C9A227" },
@@ -33,13 +35,29 @@ export default function PublishDashboard({
   const [hook, setHook] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
   const [accent, setAccent] = useState(ACCENT_OPTIONS[0].value);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
+  const [uploadingCoverFor, setUploadingCoverFor] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
 
   function toggleGenre(g: string) {
     setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
+  }
+
+  function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
   }
 
   async function handleCreateStory(e: React.FormEvent) {
@@ -47,10 +65,14 @@ export default function PublishDashboard({
     setLoading(true);
     setError("");
     try {
+      let cover_url: string | null = null;
+      if (coverFile && userId) {
+        cover_url = await uploadCoverImage(coverFile, userId);
+      }
       const res = await fetch("/api/stories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, hook, genres, accent }),
+        body: JSON.stringify({ title, hook, genres, accent, cover_url }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create story");
@@ -60,6 +82,29 @@ export default function PublishDashboard({
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleChangeCover(storyId: string, file: File) {
+    if (!userId) return;
+    setUploadingCoverFor(storyId);
+    try {
+      const cover_url = await uploadCoverImage(file, userId);
+      const res = await fetch(`/api/stories/${storyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cover_url }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to update cover.");
+        return;
+      }
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to upload cover.");
+    } finally {
+      setUploadingCoverFor(null);
     }
   }
 
@@ -142,6 +187,22 @@ export default function PublishDashboard({
           </div>
           <div>
             <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">
+              Cover Image (optional — a placeholder is used if you skip this)
+            </label>
+            <div className="flex items-center gap-4">
+              {coverPreview && (
+                <img src={coverPreview} alt="" className="h-24 w-16 rounded-sm border border-line object-cover" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverFileChange}
+                className="text-xs text-paper-soft"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">
               Accent Color
             </label>
             <div className="flex gap-2">
@@ -193,6 +254,23 @@ export default function PublishDashboard({
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
+                      <label
+                        htmlFor={`cover-${s.id}`}
+                        className="cursor-pointer rounded-sm border border-line px-3 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
+                      >
+                        {uploadingCoverFor === s.id ? "Uploading..." : "Change Cover"}
+                      </label>
+                      <input
+                        id={`cover-${s.id}`}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingCoverFor === s.id}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleChangeCover(s.id, file);
+                        }}
+                      />
                       <a
                         href={`/publish/${s.slug}/new-chapter`}
                         className="rounded-sm border border-line px-4 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
