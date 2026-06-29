@@ -105,3 +105,19 @@ export async function getMyStories(userId: string): Promise<DbStory[]> {
     chapter_count: s.story_chapters?.[0]?.count ?? 0,
   }));
 }
+
+export interface ChapterSummary {
+  id: string;
+  number: number;
+  title: string;
+}
+
+export async function getStoryChapters(storyId: string): Promise<ChapterSummary[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("story_chapters")
+    .select("id, number, title")
+    .eq("story_id", storyId)
+    .order("number", { ascending: true });
+  return data ?? [];
+}

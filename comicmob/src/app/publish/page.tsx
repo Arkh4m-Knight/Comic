@@ -1,5 +1,5 @@
 import { createClient } from "@/src/lib/supabase/server";
-import { getMyStories } from "@/src/lib/stories-db";
+import { getMyStories, getStoryChapters } from "@/src/lib/stories-db";
 import PublishDashboard from "@/src/components/PublishDashboard";
 import Link from "next/link";
 
@@ -25,11 +25,15 @@ export default async function PublishPage() {
   }
 
   const myStories = await getMyStories(data.user.id);
+  const chaptersByStory: Record<string, { id: string; number: number; title: string }[]> = {};
+  for (const story of myStories) {
+    chaptersByStory[story.id] = await getStoryChapters(story.id);
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="mb-10 font-display text-4xl italic text-paper">Publish</h1>
-      <PublishDashboard myStories={myStories} />
+      <PublishDashboard myStories={myStories} chaptersByStory={chaptersByStory} />
     </div>
   );
 }

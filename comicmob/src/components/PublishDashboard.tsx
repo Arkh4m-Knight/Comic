@@ -15,7 +15,19 @@ const GENRE_OPTIONS = [
   "Action", "Fantasy", "Sci-Fi", "Romance", "Comedy", "Drama", "Adventure", "Mystery", "Horror", "Thriller",
 ];
 
-export default function PublishDashboard({ myStories }: { myStories: DbStory[] }) {
+interface ChapterSummary {
+  id: string;
+  number: number;
+  title: string;
+}
+
+export default function PublishDashboard({
+  myStories,
+  chaptersByStory,
+}: {
+  myStories: DbStory[];
+  chaptersByStory: Record<string, ChapterSummary[]>;
+}) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [hook, setHook] = useState("");
@@ -23,6 +35,8 @@ export default function PublishDashboard({ myStories }: { myStories: DbStory[] }
   const [accent, setAccent] = useState(ACCENT_OPTIONS[0].value);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [expandedStory, setExpandedStory] = useState<string | null>(null);
 
   function toggleGenre(g: string) {
     setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
@@ -46,6 +60,38 @@ export default function PublishDashboard({ myStories }: { myStories: DbStory[] }
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDeleteStory(storyId: string, storyTitle: string) {
+    if (!confirm(`Delete "${storyTitle}" and all its chapters? This can't be undone.`)) return;
+    setDeletingId(storyId);
+    try {
+      const res = await fetch(`/api/stories/${storyId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to delete story.");
+        return;
+      }
+      router.refresh();
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleDeleteChapter(storyId: string, chapterId: string, chapterTitle: string) {
+    if (!confirm(`Delete chapter "${chapterTitle}"? This can't be undone.`)) return;
+    setDeletingId(chapterId);
+    try {
+      const res = await fetch(`/api/stories/${storyId}/chapters/${chapterId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to delete chapter.");
+        return;
+      }
+      router.refresh();
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -131,20 +177,59 @@ export default function PublishDashboard({ myStories }: { myStories: DbStory[] }
           <p className="text-sm text-paper-soft">You haven&apos;t published any stories yet.</p>
         ) : (
           <div className="divide-y divide-line rounded-sm border border-line">
-            {myStories.map((s) => (
-              <div key={s.id} className="flex items-center justify-between px-5 py-4">
-                <div>
-                  <p className="font-display text-lg italic text-paper">{s.title}</p>
-                  <p className="text-xs text-paper-faint">{s.chapter_count} chapter(s) published</p>
+            {myStories.map((s) => {
+              const chapters = chaptersByStory[s.id] ?? [];
+              const isExpanded = expandedStory === s.id;
+              return (
+                <div key={s.id}>
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <div>
+                      <p className="font-display text-lg italic text-paper">{s.title}</p>
+                      <button
+                        onClick={() => setExpandedStory(isExpanded ? null : s.id)}
+                        className="text-xs text-paper-faint underline hover:text-paper-soft"
+                      >
+                        {s.chapter_count} chapter(s) published {chapters.length > 0 && (isExpanded ? "(hide)" : "(show)")}
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`/publish/${s.slug}/new-chapter`}
+                        className="rounded-sm border border-line px-4 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
+                      >
+                        + Add Chapter
+                      </a>
+                      <button
+                        onClick={() => handleDeleteStory(s.id, s.title)}
+                        disabled={deletingId === s.id}
+                        className="rounded-sm border border-line px-3 py-2 text-xs uppercase tracking-widest2 text-red-400 hover:border-red-400 disabled:opacity-50"
+                      >
+                        {deletingId === s.id ? "..." : "Delete"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {isExpanded && chapters.length > 0 && (
+                    <div className="divide-y divide-line bg-ink-950 px-5">
+                      {chapters.map((c) => (
+                        <div key={c.id} className="flex items-center justify-between py-3">
+                          <span className="text-sm text-paper-soft">
+                            Ch. {c.number} — {c.title}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteChapter(s.id, c.id, c.title)}
+                            disabled={deletingId === c.id}
+                            className="text-xs uppercase tracking-widest2 text-red-400 hover:underline disabled:opacity-50"
+                          >
+                            {deletingId === c.id ? "..." : "Delete"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <a
-                  href={`/publish/${s.slug}/new-chapter`}
-                  className="rounded-sm border border-line px-4 py-2 text-xs uppercase tracking-widest2 text-paper hover:border-foil"
-                >
-                  + Add Chapter
-                </a>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
