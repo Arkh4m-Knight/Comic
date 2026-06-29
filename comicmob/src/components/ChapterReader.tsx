@@ -76,6 +76,14 @@ export default function ChapterReader({
           >
             A+
           </button>
+          <a
+            href={`/api/pdf/${storySlug}/${chapterNumber}`}
+            aria-label="Download this chapter as a PDF"
+            className="hover:text-paper"
+            title="Download PDF"
+          >
+            ⤓ PDF
+          </a>
           <span className="hidden tracking-widest2 sm:inline">
             {chapterNumber} / {totalChapters}
           </span>
