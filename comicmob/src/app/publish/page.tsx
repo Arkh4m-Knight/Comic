@@ -1,5 +1,5 @@
 import { createClient } from "@/src/lib/supabase/server";
-import { getMyStories, getStoryChapters } from "@/src/lib/stories-db";
+import { getMyStories, getStoryChapters, isAdmin, listOriginals } from "@/src/lib/stories-db";
 import PublishDashboard from "@/src/components/PublishDashboard";
 import Link from "next/link";
 
@@ -24,16 +24,24 @@ export default async function PublishPage() {
     );
   }
 
+  const admin = await isAdmin(data.user.id);
   const myStories = await getMyStories(data.user.id);
+  const originals = admin ? await listOriginals() : [];
+
   const chaptersByStory: Record<string, { id: string; number: number; title: string }[]> = {};
-  for (const story of myStories) {
+  for (const story of [...myStories, ...originals]) {
     chaptersByStory[story.id] = await getStoryChapters(story.id);
   }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="mb-10 font-display text-4xl italic text-paper">Publish</h1>
-      <PublishDashboard myStories={myStories} chaptersByStory={chaptersByStory} />
+      <PublishDashboard
+        myStories={myStories}
+        originals={originals}
+        isAdmin={admin}
+        chaptersByStory={chaptersByStory}
+      />
     </div>
   );
 }
