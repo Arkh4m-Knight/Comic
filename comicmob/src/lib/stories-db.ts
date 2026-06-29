@@ -121,3 +121,23 @@ export async function getStoryChapters(storyId: string): Promise<ChapterSummary[
     .order("number", { ascending: true });
   return data ?? [];
 }
+
+export async function getFavoriteStories(userId: string): Promise<DbStory[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("favorites")
+    .select(
+      "story_id, stories(id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, profiles(display_name), story_chapters(count))"
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  return (data ?? [])
+    .map((f: any) => f.stories)
+    .filter(Boolean)
+    .map((s: any) => ({
+      ...s,
+      creator_name: s.profiles?.display_name ?? null,
+      chapter_count: s.story_chapters?.[0]?.count ?? 0,
+    }));
+}

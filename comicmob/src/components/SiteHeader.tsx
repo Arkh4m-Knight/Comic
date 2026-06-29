@@ -6,6 +6,7 @@ import AuthStatus from "@/src/components/AuthStatus";
 const navLinks = [
   { href: "/#originals", label: "Originals" },
   { href: "/#community", label: "Community" },
+  { href: "/library", label: "Library" },
   { href: "/publish", label: "Publish" },
 ];
 

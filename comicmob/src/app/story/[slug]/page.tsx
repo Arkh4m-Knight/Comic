@@ -1,5 +1,6 @@
 import { getStoryBySlug } from "@/src/lib/stories-db";
 import OpenBook from "@/src/components/OpenBook";
+import FavoriteButton from "@/src/components/FavoriteButton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -82,15 +83,18 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
             &ldquo;{story.hook}&rdquo;
           </p>
 
-          {story.chapter_count > 0 && (
-            <Link
-              href={`/story/${story.slug}/chapter/1`}
-              className="mt-8 inline-block rounded-sm px-7 py-3 text-sm font-semibold text-ink-950"
-              style={{ backgroundColor: story.accent }}
-            >
-              Start Reading
-            </Link>
-          )}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            {story.chapter_count > 0 && (
+              <Link
+                href={`/story/${story.slug}/chapter/1`}
+                className="inline-block rounded-sm px-7 py-3 text-sm font-semibold text-ink-950"
+                style={{ backgroundColor: story.accent }}
+              >
+                Read Online
+              </Link>
+            )}
+            <FavoriteButton storyId={story.id} accent={story.accent} />
+          </div>
 
           {story.is_original ? (
             <div className="mt-12">
