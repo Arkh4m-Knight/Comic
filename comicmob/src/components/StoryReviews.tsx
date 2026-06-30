@@ -10,6 +10,8 @@ interface StoryReviewsProps {
   isOwnStory: boolean;
 }
 
+const MIN_REVIEW_LENGTH = 20;
+
 export default function StoryReviews({ storyId, accent, initialReviews, isOwnStory }: StoryReviewsProps) {
   const [reviews, setReviews] = useState(initialReviews);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
@@ -30,7 +32,7 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
   const alreadyReviewed = reviews.some((r) => r.author_id === userId);
 
   async function submit() {
-    if (!content.trim()) return;
+    if (content.trim().length < MIN_REVIEW_LENGTH) return;
     setSubmitting(true);
     setMessage(null);
     try {
@@ -82,13 +84,16 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What did you think?"
+            placeholder="What did you think? (at least 20 characters)"
             className="h-24 w-full rounded-sm border border-line bg-transparent p-3 text-sm text-paper outline-none placeholder:text-paper-faint"
           />
+          <p className="mt-1 text-[11px] text-paper-faint">
+            {content.trim().length}/{MIN_REVIEW_LENGTH} characters
+          </p>
           <div className="mt-3 flex items-center justify-between">
             <button
               onClick={submit}
-              disabled={submitting || !content.trim()}
+              disabled={submitting || content.trim().length < MIN_REVIEW_LENGTH}
               className="rounded-sm px-6 py-2.5 text-xs uppercase tracking-widest2 text-ink-950 disabled:opacity-50"
               style={{ backgroundColor: accent }}
             >

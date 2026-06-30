@@ -11,8 +11,11 @@ export async function POST(req: Request, { params }: { params: { storyId: string
 
   const { rating, content } = await req.json();
 
-  if (!rating || rating < 1 || rating > 5 || !content || !content.trim()) {
-    return NextResponse.json({ error: "A rating (1-5) and some review text are required." }, { status: 400 });
+  if (!rating || rating < 1 || rating > 5 || !content || content.trim().length < 20) {
+    return NextResponse.json(
+      { error: "A rating (1-5) and at least 20 characters of review text are required." },
+      { status: 400 }
+    );
   }
 
   const { data, error } = await supabase
