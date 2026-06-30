@@ -1,6 +1,8 @@
-import { getStoryBySlug } from "@/src/lib/stories-db";
+import { getStoryBySlug, getStoryReviews } from "@/src/lib/stories-db";
 import OpenBook from "@/src/components/OpenBook";
 import FavoriteButton from "@/src/components/FavoriteButton";
+import StoryReviews from "@/src/components/StoryReviews";
+import { createClient } from "@/src/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -37,6 +39,10 @@ function RoadmapStep({
 export default async function StoryHubPage({ params }: { params: { slug: string } }) {
   const story = await getStoryBySlug(params.slug);
   if (!story) return notFound();
+
+  const [reviews, supabase] = await Promise.all([getStoryReviews(story.id), createClient()]);
+  const { data: userData } = await supabase.auth.getUser();
+  const isOwnStory = !!userData.user && userData.user.id === story.creator_id;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -117,6 +123,8 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
           )}
         </div>
       </div>
+
+      <StoryReviews storyId={story.id} accent={story.accent} initialReviews={reviews} isOwnStory={isOwnStory} />
     </div>
   );
 }

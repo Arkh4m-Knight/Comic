@@ -45,7 +45,7 @@ export async function POST(req: Request, { params }: { params: { storyId: string
   const { data, error } = await supabase
     .from("story_chapters")
     .insert({ story_id: params.storyId, number, title, content })
-    .select()
+    .select("id, story_id, number, title, published_at, coin_price, created_at")
     .single();
 
   if (error) {
