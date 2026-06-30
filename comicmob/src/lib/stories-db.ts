@@ -24,6 +24,8 @@ export interface DbChapter {
   free_at: string;
   coin_price: number;
   unlocked_with_coins: boolean;
+  unlocked_with_daily_pass: boolean;
+  daily_pass_expires_at: string | null;
 }
 
 // Looks up display names for a set of creator IDs in one query. Used
@@ -116,6 +118,56 @@ export async function getMyCoinBalance(): Promise<number> {
 
   const { data } = await supabase.rpc("get_my_coin_balance");
   return (data as number) ?? 0;
+}
+
+export interface DailyPassStatus {
+  can_redeem: boolean;
+  next_available_at: string | null;
+}
+
+export async function getMyDailyPassStatus(): Promise<DailyPassStatus> {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return { can_redeem: false, next_available_at: null };
+
+  const { data } = await supabase.rpc("get_my_daily_pass_status");
+  return (data as DailyPassStatus) ?? { can_redeem: false, next_available_at: null };
+}
+
+export interface DbStoryReview {
+  id: string;
+  story_id: string;
+  author_id: string;
+  rating: number;
+  content: string;
+  created_at: string;
+  author_name: string;
+}
+
+export async function getStoryReviews(storyId: string): Promise<DbStoryReview[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("story_reviews")
+    .select("id, story_id, author_id, rating, content, created_at")
+    .eq("story_id", storyId)
+    .order("created_at", { ascending: false });
+
+  const rows = data ?? [];
+  const names = await getDisplayNames(rows.map((r) => r.author_id));
+
+  return rows.map((r) => ({ ...r, author_name: names[r.author_id] ?? "A reader" }));
+}
+
+export async function getMyReviewForStory(storyId: string, userId: string): Promise<DbStoryReview | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("story_reviews")
+    .select("id, story_id, author_id, rating, content, created_at")
+    .eq("story_id", storyId)
+    .eq("author_id", userId)
+    .maybeSingle();
+  if (!data) return null;
+  return { ...data, author_name: "" };
 }
 
 export async function listChapterNumbers(storyId: string): Promise<number[]> {
