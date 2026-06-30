@@ -37,6 +37,12 @@ export async function GET(
   const chapterNumber = parseInt(params.number, 10);
   const chapter = await getChapter(story.id, chapterNumber);
   if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+  if (chapter.locked || !chapter.content) {
+    return NextResponse.json(
+      { error: "This chapter isn't unlocked yet. Read it online and unlock it with coins first." },
+      { status: 403 }
+    );
+  }
 
   const pdfDoc = await PDFDocument.create();
   const bodyFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);

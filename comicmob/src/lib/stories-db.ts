@@ -19,7 +19,11 @@ export interface DbChapter {
   story_id: string;
   number: number;
   title: string;
-  content: string;
+  content: string | null;
+  locked: boolean;
+  free_at: string;
+  coin_price: number;
+  unlocked_with_coins: boolean;
 }
 
 // Looks up display names for a set of creator IDs in one query. Used
@@ -96,13 +100,22 @@ export async function getStoryBySlug(slug: string): Promise<DbStory | null> {
 
 export async function getChapter(storyId: string, number: number): Promise<DbChapter | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("story_chapters")
-    .select("id, story_id, number, title, content")
-    .eq("story_id", storyId)
-    .eq("number", number)
-    .maybeSingle();
-  return data ?? null;
+  const { data } = await supabase.rpc("get_chapter_access", {
+    p_story_id: storyId,
+    p_number: number,
+  });
+  return (data as DbChapter | null) ?? null;
+}
+
+// Reader's own coin wallet balance. Returns 0 for signed-out users (the
+// RPC requires auth.uid(), which is null when signed out).
+export async function getMyCoinBalance(): Promise<number> {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return 0;
+
+  const { data } = await supabase.rpc("get_my_coin_balance");
+  return (data as number) ?? 0;
 }
 
 export async function listChapterNumbers(storyId: string): Promise<number[]> {

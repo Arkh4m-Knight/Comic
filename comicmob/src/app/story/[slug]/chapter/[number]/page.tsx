@@ -1,4 +1,4 @@
-import { getStoryBySlug, getChapter, listChapterNumbers } from "@/src/lib/stories-db";
+import { getStoryBySlug, getChapter, listChapterNumbers, getMyCoinBalance } from "@/src/lib/stories-db";
 import ChapterReader from "@/src/components/ChapterReader";
 import { notFound } from "next/navigation";
 
@@ -15,16 +15,22 @@ export default async function ChapterPage({
   if (!chapter) return notFound();
 
   const allNumbers = await listChapterNumbers(story.id);
+  const coinBalance = await getMyCoinBalance();
 
   return (
     <ChapterReader
       storyTitle={story.title}
       storySlug={story.slug}
       accent={story.accent}
+      chapterId={chapter.id}
       chapterNumber={chapter.number}
       chapterTitle={chapter.title}
-      paragraphs={chapter.content.split("\n\n").filter(Boolean)}
+      paragraphs={chapter.content ? chapter.content.split("\n\n").filter(Boolean) : []}
       totalChapters={allNumbers.length}
+      locked={chapter.locked}
+      freeAt={chapter.free_at}
+      coinPrice={chapter.coin_price}
+      coinBalance={coinBalance}
     />
   );
 }

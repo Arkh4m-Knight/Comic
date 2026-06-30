@@ -1,15 +1,21 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ChapterUnlock from "./ChapterUnlock";
 
 interface ChapterReaderProps {
   storyTitle: string;
   storySlug: string;
   accent: string;
+  chapterId: string;
   chapterNumber: number;
   chapterTitle: string;
   paragraphs: string[];
   totalChapters: number;
+  locked: boolean;
+  freeAt: string;
+  coinPrice: number;
+  coinBalance: number;
 }
 
 const FONT_SIZES = ["text-base", "text-lg", "text-xl"];
@@ -18,10 +24,15 @@ export default function ChapterReader({
   storyTitle,
   storySlug,
   accent,
+  chapterId,
   chapterNumber,
   chapterTitle,
   paragraphs,
   totalChapters,
+  locked,
+  freeAt,
+  coinPrice,
+  coinBalance,
 }: ChapterReaderProps) {
   const [progress, setProgress] = useState(0);
   const [fontSizeIndex, setFontSizeIndex] = useState(1);
@@ -77,10 +88,11 @@ export default function ChapterReader({
             A+
           </button>
           <a
-            href={`/api/pdf/${storySlug}/${chapterNumber}`}
-            aria-label="Download this chapter as a PDF"
-            className="hover:text-paper"
-            title="Download PDF"
+            href={locked ? undefined : `/api/pdf/${storySlug}/${chapterNumber}`}
+            aria-label={locked ? "Unlock this chapter to download a PDF" : "Download this chapter as a PDF"}
+            className={locked ? "cursor-not-allowed text-paper-faint" : "hover:text-paper"}
+            title={locked ? "Unlock this chapter first" : "Download PDF"}
+            onClick={(e) => locked && e.preventDefault()}
           >
             ⤓ PDF
           </a>
@@ -91,17 +103,27 @@ export default function ChapterReader({
       </div>
 
       {/* Reading column */}
-      <div className="mx-auto max-w-2xl px-6 py-14">
-        <p className="mb-2 font-display text-sm italic text-paper-soft sm:hidden">
-          Chapter {chapterNumber} — {chapterTitle}
-        </p>
-        <h1 className="mb-10 font-display text-3xl italic text-paper">{chapterTitle}</h1>
-        <div className={`space-y-5 font-display leading-relaxed text-paper-soft ${FONT_SIZES[fontSizeIndex]}`}>
-          {paragraphs.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
+      {locked ? (
+        <ChapterUnlock
+          chapterId={chapterId}
+          accent={accent}
+          freeAt={freeAt}
+          coinPrice={coinPrice}
+          coinBalance={coinBalance}
+        />
+      ) : (
+        <div className="mx-auto max-w-2xl px-6 py-14">
+          <p className="mb-2 font-display text-sm italic text-paper-soft sm:hidden">
+            Chapter {chapterNumber} — {chapterTitle}
+          </p>
+          <h1 className="mb-10 font-display text-3xl italic text-paper">{chapterTitle}</h1>
+          <div className={`space-y-5 font-display leading-relaxed text-paper-soft ${FONT_SIZES[fontSizeIndex]}`}>
+            {paragraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Chapter navigation */}
       <div className="mx-auto flex max-w-2xl items-center justify-between border-t border-line px-6 py-8">
