@@ -49,17 +49,38 @@ async function getDisplayNames(userIds: string[]): Promise<Record<string, string
   return map;
 }
 
+// Batch chapter-count lookup. Uses get_chapter_counts() instead of the
+// PostgREST embedded join story_chapters(count), which requires
+// table-level SELECT on story_chapters -- gone since that table now only
+// has column-level grants (see supabase_schema_chapter_access.sql).
+async function getChapterCounts(storyIds: string[]): Promise<Record<string, number>> {
+  const ids = [...new Set(storyIds.filter(Boolean))];
+  if (ids.length === 0) return {};
+
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("get_chapter_counts", { p_story_ids: ids });
+
+  const map: Record<string, number> = {};
+  for (const row of (data ?? []) as { story_id: string; chapter_count: number }[]) {
+    map[row.story_id] = row.chapter_count;
+  }
+  return map;
+}
+
 export async function listOriginals(): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url")
     .eq("is_original", true)
     .order("created_at", { ascending: true });
 
-  return (data ?? []).map((s: any) => ({
+  const rows = data ?? [];
+  const counts = await getChapterCounts(rows.map((s) => s.id));
+
+  return rows.map((s) => ({
     ...s,
-    chapter_count: s.story_chapters?.[0]?.count ?? 0,
+    chapter_count: counts[s.id] ?? 0,
   }));
 }
 
@@ -67,17 +88,20 @@ export async function listCommunityStories(): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url")
     .eq("is_original", false)
     .order("created_at", { ascending: false });
 
   const rows = data ?? [];
-  const names = await getDisplayNames(rows.map((s: any) => s.creator_id));
+  const [names, counts] = await Promise.all([
+    getDisplayNames(rows.map((s) => s.creator_id)),
+    getChapterCounts(rows.map((s) => s.id)),
+  ]);
 
-  return rows.map((s: any) => ({
+  return rows.map((s) => ({
     ...s,
     creator_name: s.creator_id ? names[s.creator_id] ?? null : null,
-    chapter_count: s.story_chapters?.[0]?.count ?? 0,
+    chapter_count: counts[s.id] ?? 0,
   }));
 }
 
@@ -85,18 +109,21 @@ export async function getStoryBySlug(slug: string): Promise<DbStory | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!data) return null;
 
-  const names = data.creator_id ? await getDisplayNames([data.creator_id]) : {};
+  const [names, counts] = await Promise.all([
+    data.creator_id ? getDisplayNames([data.creator_id]) : Promise.resolve({} as Record<string, string>),
+    getChapterCounts([data.id]),
+  ]);
 
   return {
-    ...(data as any),
+    ...data,
     creator_name: data.creator_id ? names[data.creator_id] ?? null : null,
-    chapter_count: (data as any).story_chapters?.[0]?.count ?? 0,
+    chapter_count: counts[data.id] ?? 0,
   };
 }
 
@@ -190,13 +217,16 @@ export async function getMyStories(userId: string): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count)")
+    .select("id, slug, title, hook, genres, accent, is_original, creator_id, cover_url")
     .eq("creator_id", userId)
     .order("created_at", { ascending: false });
 
-  return (data ?? []).map((s: any) => ({
+  const rows = data ?? [];
+  const counts = await getChapterCounts(rows.map((s) => s.id));
+
+  return rows.map((s) => ({
     ...s,
-    chapter_count: s.story_chapters?.[0]?.count ?? 0,
+    chapter_count: counts[s.id] ?? 0,
   }));
 }
 
@@ -220,18 +250,19 @@ export async function getFavoriteStories(userId: string): Promise<DbStory[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("favorites")
-    .select(
-      "story_id, stories(id, slug, title, hook, genres, accent, is_original, creator_id, cover_url, story_chapters(count))"
-    )
+    .select("story_id, stories(id, slug, title, hook, genres, accent, is_original, creator_id, cover_url)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   const rows = (data ?? []).map((f: any) => f.stories).filter(Boolean);
-  const names = await getDisplayNames(rows.map((s: any) => s.creator_id));
+  const [names, counts] = await Promise.all([
+    getDisplayNames(rows.map((s: any) => s.creator_id)),
+    getChapterCounts(rows.map((s: any) => s.id)),
+  ]);
 
   return rows.map((s: any) => ({
     ...s,
     creator_name: s.creator_id ? names[s.creator_id] ?? null : null,
-    chapter_count: s.story_chapters?.[0]?.count ?? 0,
+    chapter_count: counts[s.id] ?? 0,
   }));
 }
