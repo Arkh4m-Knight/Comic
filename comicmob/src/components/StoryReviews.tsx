@@ -223,6 +223,7 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
                   {"★".repeat(r.rating)}
                   <span className="text-paper-faint">{"★".repeat(5 - r.rating)}</span>
                 </span>
+                <span className="text-xs text-paper-faint">{r.rating}/5</span>
                 {isMine && (
                   <>
                     <button
