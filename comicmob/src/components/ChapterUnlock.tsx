@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/client";
+import { COINS_UPDATED_EVENT } from "./CoinBalance";
 
 interface ChapterUnlockProps {
   chapterId: string;
@@ -90,6 +91,7 @@ export default function ChapterUnlock({ chapterId, accent, freeAt, coinPrice, co
       return;
     }
 
+    window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
     router.refresh();
   }
 

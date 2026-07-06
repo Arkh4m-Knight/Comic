@@ -147,6 +147,25 @@ export async function getMyCoinBalance(): Promise<number> {
   return (data as number) ?? 0;
 }
 
+export interface DbCoinTransaction {
+  id: string;
+  amount: number;
+  type: string;
+  chapter_id: string | null;
+  created_at: string;
+}
+
+export async function getMyCoinTransactions(userId: string): Promise<DbCoinTransaction[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("coin_transactions")
+    .select("id, amount, type, chapter_id, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
 export interface DailyPassStatus {
   can_redeem: boolean;
   next_available_at: string | null;
