@@ -1,4 +1,4 @@
-import { getStoryBySlug, getChapter, listChapterNumbers, getMyCoinBalance } from "@/src/lib/stories-db";
+import { getStoryBySlug, getChapter, listChapterNumbers, getMyCoinBalance, splitParagraphs } from "@/src/lib/stories-db";
 import ChapterReader from "@/src/components/ChapterReader";
 import { notFound } from "next/navigation";
 
@@ -25,7 +25,7 @@ export default async function ChapterPage({
       chapterId={chapter.id}
       chapterNumber={chapter.number}
       chapterTitle={chapter.title}
-      paragraphs={chapter.content ? chapter.content.split("\n\n").filter(Boolean) : []}
+      paragraphs={chapter.content ? splitParagraphs(chapter.content) : []}
       totalChapters={allNumbers.length}
       locked={chapter.locked}
       freeAt={chapter.free_at}
