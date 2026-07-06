@@ -45,6 +45,9 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editMessage, setEditMessage] = useState<string | null>(null);
 
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
@@ -108,6 +111,21 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
       setEditMessage("Something went wrong.");
     } finally {
       setEditSubmitting(false);
+    }
+  }
+
+  async function deleteReview(reviewId: string) {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/stories/${storyId}/reviews`, { method: "DELETE" });
+      if (!res.ok) {
+        setDeleting(false);
+        return;
+      }
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      setConfirmingDeleteId(null);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -203,12 +221,40 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
                   <span className="text-paper-faint">{"★".repeat(5 - r.rating)}</span>
                 </span>
                 {isMine && (
-                  <button
-                    onClick={() => startEditing(r)}
-                    className="text-[11px] uppercase tracking-widest2 text-paper-faint hover:text-paper"
-                  >
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      onClick={() => startEditing(r)}
+                      className="text-[11px] uppercase tracking-widest2 text-paper-faint hover:text-paper"
+                    >
+                      Edit
+                    </button>
+                    {confirmingDeleteId === r.id ? (
+                      <span className="flex items-center gap-2 text-[11px] uppercase tracking-widest2">
+                        <span className="text-paper-faint">Delete this review?</span>
+                        <button
+                          onClick={() => deleteReview(r.id)}
+                          disabled={deleting}
+                          className="text-red-400 hover:text-red-300 disabled:opacity-50"
+                        >
+                          {deleting ? "Deleting…" : "Confirm"}
+                        </button>
+                        <button
+                          onClick={() => setConfirmingDeleteId(null)}
+                          disabled={deleting}
+                          className="text-paper-faint hover:text-paper"
+                        >
+                          Cancel
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmingDeleteId(r.id)}
+                        className="text-[11px] uppercase tracking-widest2 text-paper-faint hover:text-paper"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
               <p className="text-sm leading-relaxed text-paper-soft">{r.content}</p>
