@@ -1,5 +1,6 @@
 import { createClient } from "@/src/lib/supabase/server";
 import { getMyCoinBalance, getMyCoinTransactions } from "@/src/lib/stories-db";
+import BuyCoins from "@/src/components/BuyCoins";
 import Link from "next/link";
 
 const TRANSACTION_LABELS: Record<string, string> = {
@@ -65,16 +66,10 @@ export default async function CoinsPage() {
         </div>
       </div>
 
-      {/* Buy coins — placeholder until Razorpay is wired up */}
-      <div className="mb-12 rounded-sm border border-line p-6 text-center">
-        <p className="mb-2 font-display text-xl italic text-paper">Buy more coins</p>
-        <p className="mb-4 text-xs text-paper-soft">Coin top-ups are coming soon — check back shortly.</p>
-        <button
-          disabled
-          className="rounded-sm border border-line px-6 py-2.5 text-xs uppercase tracking-widest2 text-paper-faint"
-        >
-          Coming Soon
-        </button>
+      {/* Buy coins */}
+      <div className="mb-12">
+        <p className="mb-4 font-display text-xl italic text-paper">Buy more coins</p>
+        <BuyCoins accent="#D4AF37" />
       </div>
 
       {/* Transaction history */}
