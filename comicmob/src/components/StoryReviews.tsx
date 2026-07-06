@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/src/lib/supabase/client";
+import { COINS_UPDATED_EVENT } from "./CoinBalance";
 import type { DbStoryReview } from "@/src/lib/stories-db";
 
 interface StoryReviewsProps {
@@ -76,6 +77,7 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
       setReviews((prev) => [{ ...data.review, author_name: "You" }, ...prev]);
       setContent("");
       setMessage("Thanks for the review! +1 coin added to your balance.");
+      window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
     } catch {
       setMessage("Something went wrong.");
     } finally {
@@ -124,6 +126,7 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
       }
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
       setConfirmingDeleteId(null);
+      window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
     } finally {
       setDeleting(false);
     }

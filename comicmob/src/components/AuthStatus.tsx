@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import AuthModal from "./AuthModal";
+import { COINS_UPDATED_EVENT } from "./CoinBalance";
 
 interface CurrentUser {
   id: string;
@@ -39,6 +40,7 @@ export default function AuthStatus() {
       body: JSON.stringify({ action: "signout" }),
     });
     setUser(null);
+    window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
   }
 
   if (loading) {
@@ -70,7 +72,10 @@ export default function AuthStatus() {
       <AuthModal
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
-        onSuccess={() => refreshUser()}
+        onSuccess={() => {
+          refreshUser();
+          window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
+        }}
       />
     </>
   );

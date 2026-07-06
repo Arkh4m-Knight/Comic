@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import AuthStatus from "@/src/components/AuthStatus";
+import CoinBalance from "@/src/components/CoinBalance";
 
 const navLinks = [
   { href: "/#originals", label: "Originals" },
@@ -34,11 +35,13 @@ export default function SiteHeader() {
             </a>
           ))}
           <div className="h-4 w-px bg-line" />
+          <CoinBalance />
           <AuthStatus />
         </nav>
 
         {/* Mobile: auth status + menu toggle */}
         <div className="flex items-center gap-3 md:hidden">
+          <CoinBalance />
           <AuthStatus />
           <button
             onClick={() => setMenuOpen((v) => !v)}
