@@ -53,7 +53,7 @@ export default function NewChapterForm({
       </div>
       <div>
         <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">
-          Chapter Text (separate paragraphs with a blank line)
+          Chapter Text (new paragraph on each line, or separated by a blank line — both work)
         </label>
         <textarea
           value={content}

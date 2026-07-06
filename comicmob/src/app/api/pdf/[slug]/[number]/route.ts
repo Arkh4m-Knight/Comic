@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/src/lib/supabase/server";
-import { getStoryBySlug, getChapter } from "@/src/lib/stories-db";
+import { getStoryBySlug, getChapter, splitParagraphs } from "@/src/lib/stories-db";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const PAGE_WIDTH = 595; // A4 in points
@@ -74,7 +74,7 @@ export async function GET(
   y -= 16;
 
   // Body paragraphs
-  const paragraphs = chapter.content.split("\n\n").filter(Boolean);
+  const paragraphs = splitParagraphs(chapter.content);
   for (const para of paragraphs) {
     const lines = wrapText(para, bodyFont, BODY_SIZE, maxWidth);
     for (const line of lines) {

@@ -14,6 +14,30 @@ export interface DbStory {
   chapter_count: number;
 }
 
+// Splits chapter content into paragraphs. Prefers blank-line-separated
+// paragraphs (the intended format), but falls back to single-newline
+// separation if the content wasn't blank-line separated at all -- this
+// happens when someone pastes text from Word/Google Docs/etc., which
+// often uses a single line break between paragraphs rather than a blank
+// line. Without this fallback, that content silently collapses into one
+// giant unreadable paragraph instead of erroring, which is worse.
+export function splitParagraphs(content: string): string[] {
+  const normalized = content.replace(/\r\n/g, "\n").trim();
+  if (!normalized) return [];
+
+  const blankLineSeparated = normalized
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  if (blankLineSeparated.length > 1) return blankLineSeparated;
+
+  return normalized
+    .split("\n")
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
 export interface DbChapter {
   id: string;
   story_id: string;
