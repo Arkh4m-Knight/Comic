@@ -76,3 +76,28 @@ export async function PATCH(req: Request, { params }: { params: { storyId: strin
 
   return NextResponse.json({ review: data });
 }
+
+export async function DELETE(req: Request, { params }: { params: { storyId: string } }) {
+  const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData.user) {
+    return NextResponse.json({ error: "You must be signed in to delete a review." }, { status: 401 });
+  }
+
+  const { error, count } = await supabase
+    .from("story_reviews")
+    .delete({ count: "exact" })
+    .eq("story_id", params.storyId)
+    .eq("author_id", userData.user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  if (!count) {
+    return NextResponse.json({ error: "You haven't reviewed this story yet." }, { status: 404 });
+  }
+
+  return NextResponse.json({ success: true });
+}
