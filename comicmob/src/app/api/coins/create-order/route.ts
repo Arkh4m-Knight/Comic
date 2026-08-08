@@ -30,12 +30,25 @@ export async function POST(req: Request) {
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
 
-  // Razorpay amounts are in the smallest currency unit (paise for INR).
-  const order = await razorpay.orders.create({
-    amount: pkg.amountInr * 100,
-    currency: "INR",
-    notes: { user_id: userData.user.id, package_id: pkg.id, coins: String(pkg.coins) },
-  });
+  let order;
+  try {
+    // Razorpay amounts are in the smallest currency unit (paise for INR).
+    order = await razorpay.orders.create({
+      amount: pkg.amountInr * 100,
+      currency: "INR",
+      notes: { user_id: userData.user.id, package_id: pkg.id, coins: String(pkg.coins) },
+    });
+  } catch (err: any) {
+    // Log the full detail server-side (visible in Vercel function logs) --
+    // Razorpay SDK errors carry a statusCode + error.description that
+    // explain exactly what went wrong (auth failure, account restriction,
+    // amount limits, etc.), which we don't want to expose raw to the client.
+    console.error("Razorpay order creation failed:", JSON.stringify(err?.error ?? err));
+    return NextResponse.json(
+      { error: err?.error?.description || "Couldn't start the payment. Please try again in a moment." },
+      { status: 502 }
+    );
+  }
 
   // Record the pending purchase before the client ever sees Razorpay
   // Checkout, so complete_coin_purchase() has something to match against
