@@ -1,4 +1,4 @@
-import { getStoryBySlug, getStoryReviews } from "@/src/lib/stories-db";
+import { getStoryBySlug, getStoryReviews, getReadingProgress } from "@/src/lib/stories-db";
 import OpenBook from "@/src/components/OpenBook";
 import FavoriteButton from "@/src/components/FavoriteButton";
 import StoryReviews from "@/src/components/StoryReviews";
@@ -43,6 +43,8 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
   const [reviews, supabase] = await Promise.all([getStoryReviews(story.id), createClient()]);
   const { data: userData } = await supabase.auth.getUser();
   const isOwnStory = !!userData.user && userData.user.id === story.creator_id;
+  const progress = userData.user ? await getReadingProgress(userData.user.id, story.id) : null;
+  const resumeChapter = progress?.chapter_number ?? null;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -92,11 +94,11 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {story.chapter_count > 0 && (
               <Link
-                href={`/story/${story.slug}/chapter/1`}
+                href={`/story/${story.slug}/chapter/${resumeChapter ?? 1}`}
                 className="inline-block rounded-sm px-7 py-3 text-sm font-semibold text-ink-950"
                 style={{ backgroundColor: story.accent }}
               >
-                Read Online
+                {resumeChapter ? `Continue — Chapter ${resumeChapter}` : "Read Online"}
               </Link>
             )}
             <FavoriteButton storyId={story.id} accent={story.accent} />

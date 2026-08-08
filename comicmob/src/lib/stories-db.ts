@@ -190,6 +190,22 @@ export async function getMyCoinTransactions(userId: string): Promise<DbCoinTrans
   return data ?? [];
 }
 
+export interface ReadingProgress {
+  chapter_number: number;
+  paragraph_index: number;
+}
+
+export async function getReadingProgress(userId: string, storyId: string): Promise<ReadingProgress | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reading_progress")
+    .select("chapter_number, paragraph_index")
+    .eq("user_id", userId)
+    .eq("story_id", storyId)
+    .maybeSingle();
+  return data ?? null;
+}
+
 export interface DailyPassStatus {
   can_redeem: boolean;
   next_available_at: string | null;
