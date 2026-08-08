@@ -2,8 +2,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ChapterUnlock from "./ChapterUnlock";
+import ReadingProgressTracker from "./ReadingProgressTracker";
 
 interface ChapterReaderProps {
+  storyId: string;
   storyTitle: string;
   storySlug: string;
   accent: string;
@@ -16,11 +18,13 @@ interface ChapterReaderProps {
   freeAt: string;
   coinPrice: number;
   coinBalance: number;
+  resumeParagraphIndex: number | null;
 }
 
 const FONT_SIZES = ["text-base", "text-lg", "text-xl"];
 
 export default function ChapterReader({
+  storyId,
   storyTitle,
   storySlug,
   accent,
@@ -33,6 +37,7 @@ export default function ChapterReader({
   freeAt,
   coinPrice,
   coinBalance,
+  resumeParagraphIndex,
 }: ChapterReaderProps) {
   const [progress, setProgress] = useState(0);
   const [fontSizeIndex, setFontSizeIndex] = useState(1);
@@ -119,9 +124,17 @@ export default function ChapterReader({
           <h1 className="mb-10 font-display text-3xl italic text-paper">{chapterTitle}</h1>
           <div className={`space-y-5 font-display leading-relaxed text-paper-soft ${FONT_SIZES[fontSizeIndex]}`}>
             {paragraphs.map((p, i) => (
-              <p key={i}>{p}</p>
+              <p key={i} id={`para-${i}`} data-paragraph-index={i}>
+                {p}
+              </p>
             ))}
           </div>
+          <ReadingProgressTracker
+            storyId={storyId}
+            chapterId={chapterId}
+            chapterNumber={chapterNumber}
+            resumeParagraphIndex={resumeParagraphIndex}
+          />
         </div>
       )}
 
