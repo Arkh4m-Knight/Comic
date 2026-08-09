@@ -3,6 +3,13 @@ import { getFavoriteStories } from "@/src/lib/stories-db";
 import Cover from "@/src/components/Cover";
 import Link from "next/link";
 
+// app/library/page.tsx
+export const metadata: Metadata = {
+  title: "Your Library — Saved Stories | ComicMob",
+  description:
+    "Sign in to save and track original web novels you're reading on ComicMob — sci-fi, horror, romance, and mystery originals plus community stories.",
+};
+
 export default async function LibraryPage() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
