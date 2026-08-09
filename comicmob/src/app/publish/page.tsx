@@ -4,11 +4,13 @@ import PublishDashboard from "@/src/components/PublishDashboard";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-// app/library/page.tsx
+import type { Metadata } from "next";
+
+// app/publish/page.tsx
 export const metadata: Metadata = {
-  title: "Your Library — Saved Stories | ComicMob",
+  title: "Publish Your Own Web Novel Free | ComicMob",
   description:
-    "Sign in to save and track original web novels you're reading on ComicMob — sci-fi, horror, romance, and mystery originals plus community stories.",
+    "Publish your own original web novel or manga story for free on ComicMob. Join a growing community platform for original serialized fiction.",
 };
 
 export default async function PublishPage() {
