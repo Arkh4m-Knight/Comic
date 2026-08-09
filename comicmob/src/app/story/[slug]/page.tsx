@@ -6,6 +6,45 @@ import { createClient } from "@/src/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// app/story/[slug]/page.tsx
+import type { Metadata } from "next";
+
+const STORY_META: Record<string, { title: string; description: string }> = {
+  "lock-x": {
+    title: "Prana Wars: Lock X — Sci-Fi Action Web Novel | ComicMob",
+    description:
+      "Scattered individuals unite against a sinister kingdom that wants to rule the universe. Read the sci-fi/action web novel Prana Wars: Lock X on ComicMob.",
+  },
+  orphanage: {
+    title: "Orphans — Mystery Action Web Novel | ComicMob",
+    description:
+      "A group of orphans fights for justice in a world that left them behind. Read the original mystery/action/drama web novel Orphans on ComicMob.",
+  },
+  chaabuk: {
+    title: "Chabuk — Horror Web Novel | ComicMob",
+    description:
+      "A book bound by an evil spirit seeks to dominate the world. Read the original horror/drama web novel Chabuk on ComicMob.",
+  },
+  "unloved-boy": {
+    title: "Unloved Boy — Romance Web Novel | ComicMob",
+    description:
+      "Two lonely individuals meet and carve out a path of their own. Read the original romance/drama web novel Unloved Boy free on ComicMob.",
+  },
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const meta = STORY_META[params.slug];
+  if (!meta) return { title: "ComicMob" };
+  return {
+    title: meta.title,
+    description: meta.description,
+  };
+}
+
 function RoadmapStep({
   label,
   available,
