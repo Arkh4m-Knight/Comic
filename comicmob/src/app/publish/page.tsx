@@ -2,6 +2,7 @@ import { createClient } from "@/src/lib/supabase/server";
 import { getMyStories, getStoryChapters, isAdmin, listOriginals } from "@/src/lib/stories-db";
 import PublishDashboard from "@/src/components/PublishDashboard";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 // app/library/page.tsx
 export const metadata: Metadata = {
