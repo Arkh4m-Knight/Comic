@@ -4,8 +4,6 @@ import PublishDashboard from "@/src/components/PublishDashboard";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import type { Metadata } from "next";
-
 // app/publish/page.tsx
 export const metadata: Metadata = {
   title: "Publish Your Own Web Novel Free | ComicMob",
