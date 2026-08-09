@@ -2,6 +2,7 @@ import { createClient } from "@/src/lib/supabase/server";
 import { getFavoriteStories } from "@/src/lib/stories-db";
 import Cover from "@/src/components/Cover";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 // app/library/page.tsx
 export const metadata: Metadata = {
