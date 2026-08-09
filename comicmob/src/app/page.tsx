@@ -2,6 +2,15 @@ import { listOriginals, listCommunityStories } from "@/src/lib/stories-db";
 import Cover from "@/src/components/Cover";
 import GoldGlyph from "@/src/components/GoldGlyph";
 
+// app/page.tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ComicMob — Original Web Novels: Sci-Fi, Horror & Romance",
+  description:
+    "Four worlds, one studio. Read original web novels across sci-fi, horror, romance, and mystery — with a path from light novel to manga to animation.",
+};
+
 export default async function HomePage() {
   const originals = await listOriginals();
   const community = await listCommunityStories();
