@@ -1,5 +1,5 @@
 import { listOriginals } from "@/src/lib/stories-db";
-import Cover from "@/src/components/Cover";
+import StoryGrid from "@/src/components/StoryGrid";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,34 +29,8 @@ export default async function OriginalsPage() {
         each other.
       </p>
 
-      <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {originals.map((story) => (
-          
-            key={story.id}
-            href={`/story/${story.slug}`}
-            className="group block"
-            style={{ "--story-accent": story.accent } as React.CSSProperties}
-          >
-            <div className="overflow-hidden rounded-sm border border-line transition-colors group-hover:border-[var(--story-accent)]">
-              <Cover
-                title={story.title}
-                accent={story.accent}
-                coverUrl={story.cover_url}
-                className="aspect-[2/3] w-full transition-transform duration-500 group-hover:scale-[1.02]"
-              />
-            </div>
-            <div className="pt-4">
-              <p
-                className="text-[10px] font-medium uppercase tracking-widest2"
-                style={{ color: story.accent }}
-              >
-                {story.genres.join(" · ")}
-              </p>
-              <p className="mt-1 font-display text-xl italic text-paper">{story.title}</p>
-              <p className="mt-2 text-xs leading-relaxed text-paper-soft">{story.hook}</p>
-            </div>
-          </a>
-        ))}
+      <div className="mt-16">
+        <StoryGrid stories={originals} />
       </div>
     </div>
   );

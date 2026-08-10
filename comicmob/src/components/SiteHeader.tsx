@@ -5,8 +5,8 @@ import AuthStatus from "@/src/components/AuthStatus";
 import CoinBalance from "@/src/components/CoinBalance";
 
 const navLinks = [
-  { href: "/#originals", label: "Originals" },
-  { href: "/#community", label: "Community" },
+  { href: "/originals", label: "Originals" },
+  { href: "/community", label: "Community" },
   { href: "/library", label: "Library" },
   { href: "/publish", label: "Publish" },
 ];
