@@ -140,7 +140,12 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
                 {resumeChapter ? `Continue — Chapter ${resumeChapter}` : "Read Online"}
               </Link>
             )}
-            <FavoriteButton storyId={story.id} accent={story.accent} />
+            <FavoriteButton
+              storyId={story.id}
+              storySlug={story.slug}
+              genre={story.genres.join(", ")}
+              accent={story.accent}
+            />
           </div>
 
           {story.is_original ? (
@@ -165,7 +170,13 @@ export default async function StoryHubPage({ params }: { params: { slug: string 
         </div>
       </div>
 
-      <StoryReviews storyId={story.id} accent={story.accent} initialReviews={reviews} isOwnStory={isOwnStory} />
+      <StoryReviews
+        storyId={story.id}
+        storySlug={story.slug}
+        accent={story.accent}
+        initialReviews={reviews}
+        isOwnStory={isOwnStory}
+      />
     </div>
   );
 }

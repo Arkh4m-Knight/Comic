@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ChapterUnlock from "./ChapterUnlock";
 import ReadingProgressTracker from "./ReadingProgressTracker";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 interface ChapterReaderProps {
   storyId: string;
   storyTitle: string;
   storySlug: string;
+  genre: string;
   accent: string;
   chapterId: string;
   chapterNumber: number;
@@ -27,6 +29,7 @@ export default function ChapterReader({
   storyId,
   storyTitle,
   storySlug,
+  genre,
   accent,
   chapterId,
   chapterNumber,
@@ -52,6 +55,20 @@ export default function ChapterReader({
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Fires once per chapter view -- only when the reader can actually see
+  // content (not the paywall screen), so "chapter_start" reflects real
+  // reading, not just hitting a locked chapter's URL.
+  useEffect(() => {
+    if (locked) return;
+    pushToDataLayer({
+      event: "chapter_start",
+      story_slug: storySlug,
+      genre,
+      chapter_number: chapterNumber,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapterId, locked]);
 
   const hasPrev = chapterNumber > 1;
   const hasNext = chapterNumber < totalChapters;
@@ -111,6 +128,8 @@ export default function ChapterReader({
       {locked ? (
         <ChapterUnlock
           chapterId={chapterId}
+          storySlug={storySlug}
+          chapterNumber={chapterNumber}
           accent={accent}
           freeAt={freeAt}
           coinPrice={coinPrice}
@@ -131,6 +150,8 @@ export default function ChapterReader({
           </div>
           <ReadingProgressTracker
             storyId={storyId}
+            storySlug={storySlug}
+            genre={genre}
             chapterId={chapterId}
             chapterNumber={chapterNumber}
             resumeParagraphIndex={resumeParagraphIndex}

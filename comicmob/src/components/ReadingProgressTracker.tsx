@@ -1,18 +1,25 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { createClient } from "@/src/lib/supabase/client";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 interface ReadingProgressTrackerProps {
   storyId: string;
+  storySlug: string;
+  genre: string;
   chapterId: string;
   chapterNumber: number;
   resumeParagraphIndex: number | null;
 }
 
+const PROGRESS_MILESTONES = [25, 50, 75, 100] as const;
+
 const SAVE_DEBOUNCE_MS = 2000;
 
 export default function ReadingProgressTracker({
   storyId,
+  storySlug,
+  genre,
   chapterId,
   chapterNumber,
   resumeParagraphIndex,
@@ -22,6 +29,29 @@ export default function ReadingProgressTracker({
   const currentParagraphIndex = useRef(0);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasScrolledToResume = useRef(false);
+
+  // Furthest point reached in THIS chapter, and which of the 25/50/75/100%
+  // GTM milestones have already fired for it. Both reset per chapter below --
+  // reading progress is scoped to one chapter, not the whole story.
+  const maxParagraphIndexReached = useRef(0);
+  const firedMilestones = useRef<Set<number>>(new Set());
+
+  function checkMilestones(totalParagraphs: number) {
+    if (totalParagraphs === 0) return;
+    const percent = ((maxParagraphIndexReached.current + 1) / totalParagraphs) * 100;
+    for (const milestone of PROGRESS_MILESTONES) {
+      if (percent >= milestone && !firedMilestones.current.has(milestone)) {
+        firedMilestones.current.add(milestone);
+        pushToDataLayer({
+          event: "reading_progress",
+          story_slug: storySlug,
+          genre,
+          chapter_number: chapterNumber,
+          progress_percent: milestone,
+        });
+      }
+    }
+  }
 
   async function save() {
     const supabase = createClient();
@@ -62,6 +92,10 @@ export default function ReadingProgressTracker({
   }, [resumeParagraphIndex]);
 
   useEffect(() => {
+    // New chapter -- reset progress tracking so milestones can fire again.
+    maxParagraphIndexReached.current = 0;
+    firedMilestones.current = new Set();
+
     const paragraphs = Array.from(document.querySelectorAll("[data-paragraph-index]"));
     if (paragraphs.length === 0) return;
 
@@ -76,6 +110,13 @@ export default function ReadingProgressTracker({
 
         if (visible.length > 0) {
           currentParagraphIndex.current = Math.min(...visible);
+
+          const highestVisible = Math.max(...visible);
+          if (highestVisible > maxParagraphIndexReached.current) {
+            maxParagraphIndexReached.current = highestVisible;
+            checkMilestones(paragraphs.length);
+          }
+
           scheduleSave();
         }
       },
