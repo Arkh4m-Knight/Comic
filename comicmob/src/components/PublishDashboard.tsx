@@ -45,6 +45,14 @@ export default function PublishDashboard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingChapter, setEditingChapter] = useState<{
+    storyId: string;
+    chapterId: string;
+    title: string;
+    content: string;
+  } | null>(null);
+  const [loadingChapterId, setLoadingChapterId] = useState<string | null>(null);
+  const [savingChapterId, setSavingChapterId] = useState<string | null>(null);
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
   const [uploadingCoverFor, setUploadingCoverFor] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -170,6 +178,50 @@ export default function PublishDashboard({
       router.refresh();
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleStartEditChapter(storyId: string, chapterId: string) {
+    setLoadingChapterId(chapterId);
+    try {
+      const res = await fetch(`/api/stories/${storyId}/chapters/${chapterId}`);
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        alert(data.error || "Couldn't load this chapter.");
+        return;
+      }
+      setEditingChapter({
+        storyId,
+        chapterId,
+        title: data.chapter.title,
+        content: data.chapter.content,
+      });
+    } finally {
+      setLoadingChapterId(null);
+    }
+  }
+
+  async function handleSaveChapterEdit() {
+    if (!editingChapter) return;
+    setSavingChapterId(editingChapter.chapterId);
+    try {
+      const res = await fetch(
+        `/api/stories/${editingChapter.storyId}/chapters/${editingChapter.chapterId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: editingChapter.title, content: editingChapter.content }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to save chapter.");
+        return;
+      }
+      setEditingChapter(null);
+      router.refresh();
+    } finally {
+      setSavingChapterId(null);
     }
   }
 
@@ -410,20 +462,69 @@ export default function PublishDashboard({
 
         {isExpanded && chapters.length > 0 && (
           <div className="divide-y divide-line bg-ink-950 px-5">
-            {chapters.map((c) => (
-              <div key={c.id} className="flex items-center justify-between py-3">
-                <span className="text-sm text-paper-soft">
-                  Ch. {c.number} — {c.title}
-                </span>
-                <button
-                  onClick={() => handleDeleteChapter(s.id, c.id, c.title)}
-                  disabled={deletingId === c.id}
-                  className="text-xs uppercase tracking-widest2 text-red-400 hover:underline disabled:opacity-50"
-                >
-                  {deletingId === c.id ? "..." : "Delete"}
-                </button>
-              </div>
-            ))}
+            {chapters.map((c) => {
+              const isEditingThis = editingChapter?.chapterId === c.id;
+
+              if (isEditingThis) {
+                return (
+                  <div key={c.id} className="space-y-3 py-4">
+                    <input
+                      type="text"
+                      value={editingChapter.title}
+                      onChange={(e) => setEditingChapter({ ...editingChapter, title: e.target.value })}
+                      placeholder="Chapter title"
+                      className="w-full rounded-sm border border-line bg-transparent px-3 py-2 text-sm text-paper outline-none focus:border-foil"
+                    />
+                    <textarea
+                      value={editingChapter.content}
+                      onChange={(e) => setEditingChapter({ ...editingChapter, content: e.target.value })}
+                      rows={12}
+                      className="w-full rounded-sm border border-line bg-transparent px-3 py-2 text-sm text-paper outline-none focus:border-foil"
+                    />
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={handleSaveChapterEdit}
+                        disabled={savingChapterId === c.id}
+                        className="rounded-sm bg-foil px-5 py-2 text-xs uppercase tracking-widest2 text-ink-950 disabled:opacity-50"
+                      >
+                        {savingChapterId === c.id ? "Saving…" : "Save Changes"}
+                      </button>
+                      <button
+                        onClick={() => setEditingChapter(null)}
+                        disabled={savingChapterId === c.id}
+                        className="text-xs uppercase tracking-widest2 text-paper-faint hover:text-paper"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={c.id} className="flex items-center justify-between py-3">
+                  <span className="text-sm text-paper-soft">
+                    Ch. {c.number} — {c.title}
+                  </span>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handleStartEditChapter(s.id, c.id)}
+                      disabled={loadingChapterId === c.id}
+                      className="text-xs uppercase tracking-widest2 text-paper-faint hover:text-paper disabled:opacity-50"
+                    >
+                      {loadingChapterId === c.id ? "Loading…" : "Edit"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteChapter(s.id, c.id, c.title)}
+                      disabled={deletingId === c.id}
+                      className="text-xs uppercase tracking-widest2 text-red-400 hover:underline disabled:opacity-50"
+                    >
+                      {deletingId === c.id ? "..." : "Delete"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
