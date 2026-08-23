@@ -48,6 +48,8 @@ export default function PublishDashboard({
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
   const [uploadingCoverFor, setUploadingCoverFor] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [paywallDrafts, setPaywallDrafts] = useState<Record<string, { free: string; wait: string }>>({});
+  const [savingPaywallFor, setSavingPaywallFor] = useState<string | null>(null);
   // Fires "draft_started" once, on the first keystroke in a new story form --
   // this is what lets the "Creator Drop-offs" GA4 audience later detect
   // people who started a draft but never hit Publish.
@@ -119,6 +121,39 @@ export default function PublishDashboard({
       alert(err instanceof Error ? err.message : "Failed to upload cover.");
     } finally {
       setUploadingCoverFor(null);
+    }
+  }
+
+  async function handleSavePaywallSettings(storyId: string) {
+    const draft = paywallDrafts[storyId];
+    if (!draft) return;
+    const free_chapter_count = parseInt(draft.free, 10);
+    const unlock_wait_days = parseInt(draft.wait, 10);
+
+    if (!Number.isInteger(free_chapter_count) || free_chapter_count < 0) {
+      alert("Free chapters must be a non-negative whole number.");
+      return;
+    }
+    if (!Number.isInteger(unlock_wait_days) || unlock_wait_days < 1) {
+      alert("Unlock wait must be a whole number of at least 1 day.");
+      return;
+    }
+
+    setSavingPaywallFor(storyId);
+    try {
+      const res = await fetch(`/api/stories/${storyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ free_chapter_count, unlock_wait_days }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to update paywall settings.");
+        return;
+      }
+      router.refresh();
+    } finally {
+      setSavingPaywallFor(null);
     }
   }
 
@@ -286,9 +321,19 @@ export default function PublishDashboard({
   function renderStoryRow(s: DbStory, options: { allowDeleteStory: boolean }) {
     const chapters = chaptersByStory[s.id] ?? [];
     const isExpanded = expandedStory === s.id;
+    const draft = paywallDrafts[s.id] ?? {
+      free: String(s.free_chapter_count),
+      wait: String(s.unlock_wait_days),
+    };
+    const isDirty = draft.free !== String(s.free_chapter_count) || draft.wait !== String(s.unlock_wait_days);
+
+    function updateDraft(patch: Partial<{ free: string; wait: string }>) {
+      setPaywallDrafts((prev) => ({ ...prev, [s.id]: { ...draft, ...patch } }));
+    }
+
     return (
       <div key={s.id}>
-        <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <div>
             <p className="font-display text-lg italic text-paper">{s.title}</p>
             <button
@@ -298,6 +343,35 @@ export default function PublishDashboard({
               {s.chapter_count} chapter(s) published {chapters.length > 0 && (isExpanded ? "(hide)" : "(show)")}
             </button>
           </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-paper-soft">
+            <span>Free chapters:</span>
+            <input
+              type="number"
+              min={0}
+              value={draft.free}
+              onChange={(e) => updateDraft({ free: e.target.value })}
+              className="w-14 rounded-sm border border-line bg-ink-950 px-2 py-1 text-center text-paper outline-none focus:border-foil"
+            />
+            <span className="ml-2">Wait (days):</span>
+            <input
+              type="number"
+              min={1}
+              value={draft.wait}
+              onChange={(e) => updateDraft({ wait: e.target.value })}
+              className="w-14 rounded-sm border border-line bg-ink-950 px-2 py-1 text-center text-paper outline-none focus:border-foil"
+            />
+            {isDirty && (
+              <button
+                onClick={() => handleSavePaywallSettings(s.id)}
+                disabled={savingPaywallFor === s.id}
+                className="ml-1 rounded-sm bg-foil px-3 py-1.5 text-[11px] uppercase tracking-widest2 text-ink-950 disabled:opacity-50"
+              >
+                {savingPaywallFor === s.id ? "Saving…" : "Save"}
+              </button>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <label
               htmlFor={`cover-${s.id}`}
