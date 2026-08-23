@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/client";
 import { COINS_UPDATED_EVENT } from "./CoinBalance";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 interface ChapterUnlockProps {
   chapterId: string;
+  storySlug: string;
+  chapterNumber: number;
   accent: string;
   freeAt: string;
   coinPrice: number;
@@ -21,7 +24,15 @@ function formatCountdown(msRemaining: number): string {
   return `${hours}h ${minutes}m`;
 }
 
-export default function ChapterUnlock({ chapterId, accent, freeAt, coinPrice, coinBalance }: ChapterUnlockProps) {
+export default function ChapterUnlock({
+  chapterId,
+  storySlug,
+  chapterNumber,
+  accent,
+  freeAt,
+  coinPrice,
+  coinBalance,
+}: ChapterUnlockProps) {
   const router = useRouter();
   const [countdown, setCountdown] = useState("");
   const [unlocking, setUnlocking] = useState(false);
@@ -91,6 +102,12 @@ export default function ChapterUnlock({ chapterId, accent, freeAt, coinPrice, co
       return;
     }
 
+    pushToDataLayer({
+      event: "chapter_unlock",
+      story_slug: storySlug,
+      chapter_number: chapterNumber,
+      unlock_method: "coins",
+    });
     window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
     router.refresh();
   }
@@ -122,6 +139,12 @@ export default function ChapterUnlock({ chapterId, accent, freeAt, coinPrice, co
       return;
     }
 
+    pushToDataLayer({
+      event: "chapter_unlock",
+      story_slug: storySlug,
+      chapter_number: chapterNumber,
+      unlock_method: "daily_pass",
+    });
     router.refresh();
   }
 

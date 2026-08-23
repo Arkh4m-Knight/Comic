@@ -1,7 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
-export default function FavoriteButton({ storyId, accent }: { storyId: string; accent: string }) {
+export default function FavoriteButton({
+  storyId,
+  storySlug,
+  genre,
+  accent,
+}: {
+  storyId: string;
+  storySlug: string;
+  genre: string;
+  accent: string;
+}) {
   const [favorited, setFavorited] = useState(false);
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(true);
@@ -22,6 +33,11 @@ export default function FavoriteButton({ storyId, accent }: { storyId: string; a
     }
     const data = await res.json();
     setFavorited(data.favorited);
+
+    // Only track the moment it becomes a favorite, not un-favoriting.
+    if (!favorited && data.favorited) {
+      pushToDataLayer({ event: "favorite_story", story_slug: storySlug, genre });
+    }
   }
 
   if (loading) return <div className="h-10 w-32 animate-pulse rounded-sm bg-ink-900" />;

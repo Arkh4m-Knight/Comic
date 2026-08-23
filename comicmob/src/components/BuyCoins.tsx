@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { COINS_UPDATED_EVENT } from "./CoinBalance";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 interface CoinPackage {
   id: string;
@@ -64,6 +65,15 @@ export default function BuyCoins({ accent }: { accent: string }) {
         return;
       }
 
+      // order.amount is in paise (smallest INR unit) -- convert to rupees
+      // for GA4's `value` parameter, which expects a decimal currency amount.
+      pushToDataLayer({
+        event: "begin_checkout",
+        coin_amount: pkg.coins,
+        value: order.amount / 100,
+        currency: order.currency,
+      });
+
       const razorpay = new window.Razorpay({
         key: order.keyId,
         order_id: order.orderId,
@@ -85,6 +95,13 @@ export default function BuyCoins({ accent }: { accent: string }) {
           });
           if (verifyRes.ok) {
             setMessage(`+${pkg.coins} coins added!`);
+            pushToDataLayer({
+              event: "purchase",
+              transaction_id: response.razorpay_payment_id,
+              coin_amount: pkg.coins,
+              value: order.amount / 100,
+              currency: order.currency,
+            });
             window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
           } else {
             setMessage("Payment received — your coins should appear shortly. Refresh in a moment if not.");

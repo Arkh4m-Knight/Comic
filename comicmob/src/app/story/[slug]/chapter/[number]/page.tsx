@@ -30,6 +30,7 @@ export default async function ChapterPage({
       storyId={story.id}
       storyTitle={story.title}
       storySlug={story.slug}
+      genre={story.genres.join(", ")}
       accent={story.accent}
       chapterId={chapter.id}
       chapterNumber={chapter.number}

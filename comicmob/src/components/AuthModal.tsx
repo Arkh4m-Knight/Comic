@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/src/lib/supabase/client";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -46,10 +47,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       }
 
       if (mode === "signup" && data.needsEmailConfirmation) {
+        pushToDataLayer({ event: "sign_up", method: "email" });
         setConfirmNotice(true);
         setLoading(false);
         return;
       }
+
+      pushToDataLayer(
+        mode === "signup" ? { event: "sign_up", method: "email" } : { event: "login", method: "email" }
+      );
 
       onSuccess();
       onClose();
@@ -68,6 +74,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     setError("");
+    // Note: Supabase OAuth doesn't tell us client-side whether this is a
+    // brand-new account or a returning one until after the redirect back
+    // from Google, so this fires as "login" for both cases. If you need
+    // sign_up vs. login split out for Google specifically, that check has
+    // to happen in the /auth/callback route (comparing the user's
+    // created_at to now) and be pushed from a client component there.
+    pushToDataLayer({ event: "login", method: "google" });
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

@@ -1,9 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { DbStory } from "@/src/lib/stories-db";
 import { uploadCoverImage } from "@/src/lib/upload-cover";
 import { createClient } from "@/src/lib/supabase/client";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 const ACCENT_OPTIONS = [
   { label: "Gold", value: "#C9A227" },
@@ -49,6 +50,10 @@ export default function PublishDashboard({
   const [userId, setUserId] = useState<string | null>(null);
   const [paywallDrafts, setPaywallDrafts] = useState<Record<string, { free: string; wait: string }>>({});
   const [savingPaywallFor, setSavingPaywallFor] = useState<string | null>(null);
+  // Fires "draft_started" once, on the first keystroke in a new story form --
+  // this is what lets the "Creator Drop-offs" GA4 audience later detect
+  // people who started a draft but never hit Publish.
+  const draftStartedFired = useRef(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -82,6 +87,11 @@ export default function PublishDashboard({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create story");
+      pushToDataLayer({
+        event: "publish_story",
+        genre: genres.join(", ") || "unspecified",
+        publish_step: "published",
+      });
       router.push(`/story/${data.story.slug}`);
       router.refresh();
     } catch (err) {
@@ -190,7 +200,17 @@ export default function PublishDashboard({
             <label className="mb-1.5 block text-[11px] uppercase tracking-widest2 text-paper-soft">Title</label>
             <input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (!draftStartedFired.current && e.target.value.trim().length > 0) {
+                  draftStartedFired.current = true;
+                  pushToDataLayer({
+                    event: "publish_story",
+                    genre: genres.join(", ") || "unspecified",
+                    publish_step: "draft_started",
+                  });
+                }
+              }}
               required
               className="w-full rounded-sm border border-line bg-ink-950 p-3 text-sm text-paper outline-none focus:border-foil"
             />
