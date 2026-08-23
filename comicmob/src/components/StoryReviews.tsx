@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/src/lib/supabase/client";
 import { COINS_UPDATED_EVENT } from "./CoinBalance";
 import type { DbStoryReview } from "@/src/lib/stories-db";
+import { pushToDataLayer } from "@/src/lib/gtm";
 
 interface StoryReviewsProps {
   storyId: string;
+  storySlug: string;
   accent: string;
   initialReviews: DbStoryReview[];
   isOwnStory: boolean;
@@ -31,7 +33,7 @@ function StarPicker({ rating, onChange, accent }: { rating: number; onChange: (n
   );
 }
 
-export default function StoryReviews({ storyId, accent, initialReviews, isOwnStory }: StoryReviewsProps) {
+export default function StoryReviews({ storyId, storySlug, accent, initialReviews, isOwnStory }: StoryReviewsProps) {
   const [reviews, setReviews] = useState(initialReviews);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -77,6 +79,7 @@ export default function StoryReviews({ storyId, accent, initialReviews, isOwnSto
       setReviews((prev) => [{ ...data.review, author_name: "You" }, ...prev]);
       setContent("");
       setMessage("Thanks for the review! +1 coin added to your balance.");
+      pushToDataLayer({ event: "review_submitted", story_slug: storySlug, rating });
       window.dispatchEvent(new Event(COINS_UPDATED_EVENT));
     } catch {
       setMessage("Something went wrong.");
