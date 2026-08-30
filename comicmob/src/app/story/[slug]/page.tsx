@@ -8,27 +8,32 @@ import { notFound } from "next/navigation";
 
 // app/story/[slug]/page.tsx
 import type { Metadata } from "next";
+import { SITE_NAME, clampDescription } from "@/src/lib/seo";
 
+// Hand-written copy for the Originals. These are the pages we actually want to
+// rank, so the titles and descriptions are tuned rather than generated: each
+// leads with the story name (branded search is the realistic win), states the
+// genre, and ends with a reason to click.
 const STORY_META: Record<string, { title: string; description: string }> = {
   "lock-x": {
-    title: "Prana Wars: Lock X — Sci-Fi Action Web Novel | ComicMob",
+    title: "Prana Wars: Lock X — Sci-Fi Web Novel, Read Free | ComicMob",
     description:
-      "Scattered individuals unite against a sinister kingdom that wants to rule the universe. Read the sci-fi/action web novel Prana Wars: Lock X on ComicMob.",
+      "A sinister kingdom wants to rule the universe. Scattered strangers are all that stand in its way. Prana Wars: Lock X is a sci-fi web novel — start free.",
   },
   orphanage: {
-    title: "Orphans — Mystery Action Web Novel | ComicMob",
+    title: "Orphans — Mystery Action Web Novel | Read Free on ComicMob",
     description:
-      "A group of orphans fights for justice in a world that left them behind. Read the original mystery/action/drama web novel Orphans on ComicMob.",
+      "A group of orphans fights for justice in a world that left them behind. Orphans is an original mystery and action web novel — start reading free on ComicMob.",
   },
   chaabuk: {
-    title: "Chabuk — Horror Web Novel | ComicMob",
+    title: "Chabuk — Horror Web Novel | Read Free on ComicMob",
     description:
-      "A book bound by an evil spirit seeks to dominate the world. Read the original horror/drama web novel Chabuk on ComicMob.",
+      "A book bound by an evil spirit hungers to rule the world. Chabuk is an original horror drama light novel — start reading the free chapters on ComicMob.",
   },
   "unloved-boy": {
-    title: "Unloved Boy — Romance Web Novel | ComicMob",
+    title: "Unloved Boy — Romance Web Novel | Read Free on ComicMob",
     description:
-      "Two lonely individuals meet and carve out a path of their own. Read the original romance/drama web novel Unloved Boy free on ComicMob.",
+      "Two lonely people meet and carve out a path of their own. Unloved Boy is an original romance drama web novel — start reading the free chapters on ComicMob.",
   },
 };
 
@@ -37,11 +42,53 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const meta = STORY_META[params.slug];
-  if (!meta) return { title: "ComicMob" };
+  const handWritten = STORY_META[params.slug];
+  const story = await getStoryBySlug(params.slug);
+
+  // Unknown slug: don't let a 404 shell sit in the index under the site-wide
+  // default title.
+  if (!story) {
+    return {
+      title: "Story not found | ComicMob",
+      robots: { index: false, follow: true },
+    };
+  }
+
+  // Community stories previously all inherited the bare "ComicMob" title,
+  // which made every one of them look like a duplicate to a crawler. Fall back
+  // to the story's own title, genres and hook instead.
+  const byline = story.creator_name ? ` by ${story.creator_name}` : "";
+  const title =
+    handWritten?.title ??
+    `${story.title} — ${story.genres.join(" · ")} Web Novel | ComicMob`;
+  const description = clampDescription(
+    handWritten?.description ??
+      `${story.hook} Read ${story.title}${byline} free on ComicMob — original serialised fiction from independent writers.`,
+  );
+
+  const path = `/story/${story.slug}`;
+  const images = story.cover_url
+    ? [{ url: story.cover_url, alt: `${story.title} cover art` }]
+    : undefined;
+
   return {
-    title: meta.title,
-    description: meta.description,
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "book",
+      url: path,
+      siteName: SITE_NAME,
+      title,
+      description,
+      images,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: story.cover_url ? [story.cover_url] : undefined,
+    },
   };
 }
 
