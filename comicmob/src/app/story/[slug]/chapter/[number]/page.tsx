@@ -1,7 +1,67 @@
-import { getStoryBySlug, getChapter, listChapterNumbers, getMyCoinBalance, splitParagraphs, getReadingProgress } from "@/src/lib/stories-db";
+import { getStoryBySlug, getChapter, getStoryChapters, listChapterNumbers, getMyCoinBalance, splitParagraphs, getReadingProgress } from "@/src/lib/stories-db";
 import ChapterReader from "@/src/components/ChapterReader";
 import { createClient } from "@/src/lib/supabase/server";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { SITE_NAME, clampDescription } from "@/src/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string; number: string };
+}): Promise<Metadata> {
+  const chapterNumber = parseInt(params.number, 10);
+  const story = Number.isNaN(chapterNumber) ? null : await getStoryBySlug(params.slug);
+
+  if (!story) {
+    return { title: "Chapter not found | ComicMob", robots: { index: false, follow: true } };
+  }
+
+  // Deliberately read the chapter list rather than getChapter(): the latter
+  // goes through get_chapter_access, which evaluates paywall/Daily Pass state.
+  // Metadata generation shouldn't be touching unlock logic — it only needs a
+  // title.
+  const chapters = await getStoryChapters(story.id);
+  const chapter = chapters.find((c) => c.number === chapterNumber);
+
+  if (!chapter) {
+    return { title: `${story.title} | ComicMob`, robots: { index: false, follow: true } };
+  }
+
+  const chapterTitle = chapter.title?.trim();
+  const label = chapterTitle
+    ? `Chapter ${chapterNumber}: ${chapterTitle}`
+    : `Chapter ${chapterNumber}`;
+  const title = `${story.title} — ${label} | Read Free on ComicMob`;
+  const description = clampDescription(
+    `Read ${label} of ${story.title}, an original ${story.genres.join("/")} web novel on ComicMob. ${story.hook}`,
+  );
+
+  const path = `/story/${story.slug}/chapter/${chapterNumber}`;
+  const images = story.cover_url
+    ? [{ url: story.cover_url, alt: `${story.title} cover art` }]
+    : undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      url: path,
+      siteName: SITE_NAME,
+      title,
+      description,
+      images,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: story.cover_url ? [story.cover_url] : undefined,
+    },
+  };
+}
 
 export default async function ChapterPage({
   params,
